@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunwoda Atrix Max-16L-P | Sales Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #0f2942;
+    --accent: #f59e0b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warn: #f59e0b;
+    --battery: #3b82f6;
+    --solar: #fbbf24;
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+  }
+  body {
+    font-family: 'Sarabun', system-ui, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5; font-size: 14px;
+  }
+  h1, h2, h3, h4 { font-family: 'Prompt', sans-serif; }
+
+  /* === HEADER === */
+  header {
+    background: linear-gradient(135deg, #0f2942, #1e3a5f);
+    color: white; padding: 24px 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+  header h1 { font-size: 22px; font-weight: 600; }
+  header p { opacity: 0.85; margin-top: 4px; font-size: 13px; }
+  .btn-action {
+    background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px;
+    margin-left: 8px; transition: background 0.2s; font-family: inherit;
+  }
+  .btn-action:hover { background: rgba(255,255,255,0.25); }
+
+  /* === LAYOUT === */
+  .layout {
+    display: grid; grid-template-columns: 380px 6px 1fr;
+    min-height: calc(100vh - 80px); background: var(--bg);
+  }
+  @media (max-width: 1024px) {
+    .layout { grid-template-columns: 1fr; }
+    .splitter { display: none; }
+  }
+  .panel { background: var(--surface); padding: 24px; overflow-y: auto; max-height: calc(100vh - 80px); }
+  .panel.inputs { border-right: 1px solid var(--border); }
+  @media (max-width: 1024px) { .panel { max-height: none; }}
+
+  /* Splitter — drag to resize */
+  .splitter {
+    background: var(--border); cursor: col-resize;
+    position: relative; user-select: none; transition: background 0.2s;
+  }
+  .splitter:hover, .splitter.dragging { background: var(--accent); }
+  .splitter::before {
+    content: ''; position: absolute;
+    left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 2px; height: 40px; background: var(--muted); border-radius: 2px;
+    opacity: 0.5; transition: opacity 0.2s;
+  }
+  .splitter:hover::before { opacity: 1; background: white; }
+  .splitter::after {
+    content: ''; position: absolute;
+    left: -6px; right: -6px; top: 0; bottom: 0;
+  }
+
+  /* === INPUT GROUPS === */
+  .input-group { margin-bottom: 24px; }
+  .group-title {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px; font-weight: 600; color: var(--primary);
+    letter-spacing: 0.3px; margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    position: relative; padding-bottom: 10px;
+  }
+  .group-title::after {
+    content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 50px; height: 2px; background: var(--accent); border-radius: 2px;
+  }
+  .group-title i[data-lucide] {
+    width: 18px; height: 18px; color: var(--accent);
+    stroke-width: 2.5;
+  }
+  .result-section h2 i[data-lucide] {
+    width: 20px; height: 20px; color: var(--accent); stroke-width: 2.5;
+  }
+  .stat .icon-wrap {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(245, 158, 11, 0.1); margin-bottom: 6px;
+  }
+  .stat .icon-wrap i[data-lucide] { width: 18px; height: 18px; color: var(--accent); }
+  .stat.green .icon-wrap { background: rgba(16, 185, 129, 0.1); }
+  .stat.green .icon-wrap i[data-lucide] { color: var(--success); }
+  .stat.red .icon-wrap { background: rgba(239, 68, 68, 0.1); }
+  .stat.red .icon-wrap i[data-lucide] { color: var(--danger); }
+  .stat.blue .icon-wrap { background: rgba(59, 130, 246, 0.1); }
+  .stat.blue .icon-wrap i[data-lucide] { color: var(--battery); }
+  .field { margin-bottom: 12px; }
+  .field label {
+    display: block; font-size: 13px; font-weight: 500;
+    color: var(--text); margin-bottom: 6px;
+  }
+  .field label .hint { color: var(--muted); font-weight: 400; font-size: 11px; }
+  .input-row { display: flex; gap: 8px; align-items: center; }
+  .field input[type="number"], .field select {
+    flex: 1; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; font-family: inherit; font-variant-numeric: tabular-nums;
+    transition: border 0.2s, box-shadow 0.2s; background: white; color: var(--text);
+  }
+  .field input[type="number"]:focus, .field select:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+  }
+  .unit-tag {
+    background: var(--bg); color: var(--muted);
+    padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    min-width: 50px; text-align: center;
+  }
+  .field input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .range-display { float: right; font-weight: 600; color: var(--primary); }
+
+  /* Paired input: quantity + price */
+  .pair-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pair-grid .field { margin-bottom: 0; }
+  .subtotal-line {
+    background: #f0fdf4; border-left: 3px solid var(--success);
+    padding: 8px 12px; border-radius: 6px; font-size: 12px;
+    margin-top: 8px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .subtotal-line .lbl { color: var(--muted); font-weight: 500; }
+  .subtotal-line .amt { color: var(--primary); font-weight: 700; font-family: 'Prompt'; font-size: 14px; }
+
+  /* Radio group */
+  .radio-group { display: flex; gap: 8px; }
+  .radio-group input[type="radio"] { display: none; }
+  .radio-group label {
+    flex: 1; padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: 8px; text-align: center; cursor: pointer; margin: 0;
+    font-size: 13px; transition: all 0.2s; background: white;
+  }
+  .radio-group input[type="radio"]:checked + label {
+    background: var(--accent); color: white; border-color: var(--accent); font-weight: 600;
+  }
+
+  /* Yes/No buttons */
+  .yn { display: flex; gap: 6px; }
+  .yn button {
+    flex: 1; padding: 8px; border: 1px solid var(--border);
+    background: white; border-radius: 8px; cursor: pointer;
+    font-size: 12px; font-family: inherit; transition: all 0.2s;
+  }
+  .yn button.active {
+    background: var(--primary); color: white; border-color: var(--primary); font-weight: 600;
+  }
+
+  /* === Toggle Switch === */
+  .toggle-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px; margin-bottom: 10px;
+    transition: all 0.2s;
+  }
+  .toggle-card.active {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, #fffbeb 0%, white 100%);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+  }
+  .toggle-row {
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; user-select: none;
+  }
+  .toggle-label {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 600; color: var(--primary);
+  }
+  .toggle-label i[data-lucide] {
+    width: 18px; height: 18px; color: var(--accent); stroke-width: 2.5;
+  }
+  .toggle-switch {
+    position: relative; display: inline-block;
+    width: 44px; height: 24px; flex-shrink: 0;
+  }
+  .toggle-switch input {
+    opacity: 0; width: 0; height: 0;
+  }
+  .toggle-slider {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1; transition: .3s; border-radius: 24px;
+  }
+  .toggle-slider::before {
+    position: absolute; content: '';
+    height: 18px; width: 18px; left: 3px; bottom: 3px;
+    background-color: white; transition: .3s;
+    border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+  .toggle-switch input:checked + .toggle-slider { background-color: var(--accent); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+  .collapsible-panel {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease-out, opacity 0.2s, margin-top 0.2s, padding-top 0.2s;
+    opacity: 0;
+  }
+  .collapsible-panel.open {
+    max-height: 1500px;
+    opacity: 1;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+
+  /* === RESULTS === */
+  .panel.results { background: var(--bg); }
+  .result-section { margin-bottom: 28px; }
+  .result-section h2 {
+    font-size: 16px; font-weight: 600; color: var(--primary);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .badge {
+    background: var(--accent); color: white; padding: 2px 10px;
+    border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+
+  /* === FIT SCORE === */
+  .fit-score {
+    background: white; border-radius: 16px; padding: 24px;
+    margin-bottom: 20px; border: 2px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .fit-score.green { border-color: var(--success); background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 50%); }
+  .fit-score.yellow { border-color: var(--warn); background: linear-gradient(135deg, #fef3c7 0%, #ffffff 50%); }
+  .fit-score.red { border-color: var(--danger); background: linear-gradient(135deg, #fee2e2 0%, #ffffff 50%); }
+  .fit-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .fit-circle {
+    width: 80px; height: 80px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 700; color: white;
+    font-family: 'Prompt'; flex-shrink: 0;
+  }
+  .fit-circle.green { background: linear-gradient(135deg, #10b981, #059669); }
+  .fit-circle.yellow { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .fit-circle.red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .fit-info h3 { font-size: 20px; margin-bottom: 4px; color: var(--primary); }
+  .fit-info p { font-size: 13px; color: var(--muted); }
+  .fit-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .fit-bar { display: flex; flex-direction: column; gap: 4px; }
+  .fit-bar-head { display: flex; justify-content: space-between; font-size: 12px; }
+  .fit-bar-bg {
+    height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;
+  }
+  .fit-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s; }
+  .fit-reasons {
+    margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);
+  }
+  .fit-reasons ul { list-style: none; }
+  .fit-reasons li {
+    padding: 4px 0; font-size: 13px; padding-left: 20px; position: relative;
+  }
+  .fit-reasons li.pos::before { content: '✅'; position: absolute; left: 0; }
+  .fit-reasons li.neg::before { content: '⚠️'; position: absolute; left: 0; }
+
+  /* === BIG STATS === */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 16px;
+  }
+  @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); }}
+  .stat {
+    background: white; padding: 16px; border-radius: 12px;
+    border-left: 4px solid var(--accent);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .stat.green { border-left-color: var(--success); }
+  .stat.red { border-left-color: var(--danger); }
+  .stat.blue { border-left-color: var(--battery); }
+  .stat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat .val { font-size: 22px; font-weight: 700; color: var(--primary); font-family: 'Prompt'; }
+  .stat .un { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* === TABLES === */
+  .table-card {
+    background: white; border-radius: 12px; padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table th, table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  table th { background: var(--bg); color: var(--primary); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+  tr:last-child td { border-bottom: none; }
+  tr.total td {
+    background: #fef3c7; font-weight: 700; color: var(--primary);
+    border-top: 2px solid var(--accent);
+  }
+  tr.subtotal td { background: #f8fafc; font-weight: 600; }
+
+  /* === ALERTS === */
+  .alert {
+    padding: 12px 16px; border-radius: 10px; font-size: 13px;
+    margin-bottom: 12px; border-left: 4px solid;
+  }
+  .alert.warn { background: #fef3c7; border-color: var(--accent); color: #78350f; }
+  .alert.danger { background: #fee2e2; border-color: var(--danger); color: #7f1d1d; }
+  .alert.success { background: #d1fae5; border-color: var(--success); color: #064e3b; }
+  .alert.info { background: #dbeafe; border-color: var(--battery); color: #1e3a8a; }
+
+  /* === CHART === */
+  .chart-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-bottom: 12px; }
+  @media (max-width: 768px) { .chart-row { grid-template-columns: minmax(0, 1fr); }}
+  .chart-card {
+    background: white; border-radius: 12px; padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    min-width: 0;
+  }
+  .chart-card h3 { font-size: 13px; color: var(--primary); margin-bottom: 8px; font-weight: 600; }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* === SCENARIO === */
+  .scenario-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+  .scenario-btn {
+    background: white; border: 1px solid var(--border);
+    padding: 8px 14px; border-radius: 8px; cursor: pointer;
+    font-size: 12px; font-weight: 500; color: var(--text);
+    transition: all 0.2s; font-family: inherit;
+  }
+  .scenario-btn:hover { background: var(--bg); }
+  .scenario-btn.active {
+    background: var(--accent); color: white; border-color: var(--accent);
+  }
+
+  .conditional { display: none; }
+  .conditional.show { display: block; }
+
+  /* === PRINT === */
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    html, body { background: white !important; font-size: 11px !important; }
+    /* Layout: full width, single column */
+    .layout {
+      display: block !important;
+      grid-template-columns: 1fr !important;
+      min-height: 0 !important;
+    }
+    .splitter, .panel.inputs { display: none !important; }
+    /* Header: compact, dark text on white */
+    header {
+      background: white !important;
+      color: var(--primary) !important;
+      padding: 0 0 10px !important;
+      box-shadow: none !important;
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: 12px;
+    }
+    header h1 { color: var(--primary) !important; font-size: 18px !important; }
+    header p { color: var(--muted) !important; font-size: 11px !important; }
+    header > div:first-child { display: none !important; }
+    /* Results panel: full width, no constraints */
+    .panel, .panel.results {
+      overflow: visible !important;
+      max-height: none !important;
+      padding: 0 !important;
+      background: white !important;
+      width: 100% !important;
+    }
+    /* Hide things customers don't need */
+    .scenario-buttons { display: none !important; }
+    /* Hide internal sales-only content */
+    .badge.internal { display: none !important; }
+    .alert.internal { display: none !important; }
+    .fit-reasons li.neg { display: none !important; }
+    /* Hide edit UI for extra items - only summary rows in table show */
+    .extra-items-edit-panel { display: none !important; }
+    /* Result sections: avoid breaking charts across pages */
+    .result-section { page-break-inside: avoid; }
+    /* Print-only Inputs Summary */
+    #printInputs { display: block !important; page-break-inside: avoid; }
+    #printInputs h2 { font-size: 12px !important; }
+    #printInputsContent { font-size: 10px !important; }
+    /* Print-only Project Header */
+    #printProjectHeader { display: block !important; page-break-inside: avoid; }
+    /* Print-only Doc Number Watermark — fixed top-right on every page */
+    #printDocWatermark {
+      display: block !important;
+      position: fixed !important;
+      top: 3mm !important;
+      right: 8mm !important;
+      font-size: 12pt !important;
+      color: #94a3b8 !important;
+      font-family: 'Prompt', sans-serif !important;
+      font-weight: 600 !important;
+      letter-spacing: 1px !important;
+      z-index: 9999 !important;
+      pointer-events: none !important;
+    }
+    /* Add page margin top so content doesn't overlap watermark */
+    @page {
+      size: A4;
+      margin: 14mm 10mm 10mm 10mm;
+    }
+    /* Stats grid: 4 columns on print, compact */
+    .stats-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
+    .stat { padding: 8px !important; box-shadow: none !important; border: 1px solid #cbd5e1 !important; }
+    .stat .val { font-size: 16px !important; }
+    .stat .lbl, .stat .un { font-size: 9px !important; }
+    /* Charts: 2-column layout — give extra height for x-axis labels */
+    .chart-row { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+    .chart-wrap { height: 220px !important; }
+    .chart-card {
+      box-shadow: none !important; border: 1px solid #cbd5e1 !important; padding: 10px !important;
+      page-break-inside: avoid !important;
+    }
+    /* Force canvas to scale to container in print */
+    .chart-wrap canvas { max-width: 100% !important; width: 100% !important; }
+    .table-card, .card {
+      box-shadow: none !important; border: 1px solid #cbd5e1 !important; padding: 10px !important;
+    }
+    /* Result sections: avoid page breaks */
+    .result-section { page-break-inside: avoid; margin-bottom: 12px !important; }
+    .result-section h2 { font-size: 14px !important; margin-bottom: 8px !important; }
+    /* Tables: compact */
+    table { font-size: 10px !important; }
+    table th, table td { padding: 4px 6px !important; }
+    /* Fit Score: keep nice */
+    .fit-score { padding: 12px !important; page-break-inside: avoid; }
+    .fit-circle { width: 60px !important; height: 60px !important; font-size: 20px !important; }
+    .fit-info h3 { font-size: 14px !important; }
+    .fit-info p { font-size: 11px !important; }
+    .fit-bars { gap: 6px !important; }
+    .fit-bar-head { font-size: 10px !important; }
+    .fit-reasons li { font-size: 10px !important; }
+    /* Alerts: compact */
+    .alert { padding: 6px 10px !important; font-size: 10px !important; margin-bottom: 6px !important; }
+    /* Hide buttons */
+    button { display: none !important; }
+    .badge { background: var(--accent) !important; color: white !important; }
+  }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="float: right;">
+    <button class="btn-action" onclick="window.print()" style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="printer" style="width:14px;height:14px;"></i>พิมพ์ / Save PDF</button>
+    <button class="btn-action" onclick="resetDefaults()" style="display:inline-flex;align-items:center;gap:6px;"><i data-lucide="rotate-ccw" style="width:14px;height:14px;"></i>Reset</button>
+  </div>
+  <h1 style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;"><i data-lucide="battery-charging" style="width:28px;height:28px;color:#fbbf24;"></i>Sunwoda Atrix Max-16L-P <span style="opacity:0.7;font-size:14px;font-weight:400;">| Sales Calculator v2.0</span></h1>
+  <p>เครื่องมือคำนวณเฉพาะรุ่น <strong>Atrix Max-16L-P</strong> (16 kWh / 51.2V LFP) — Customer Fit Score, TOU, Inflation & Degradation</p>
+</header>
+
+<div class="layout">
+
+  <!-- ========== INPUT PANEL ========== -->
+  <aside class="panel inputs">
+
+    <div class="input-group">
+      <div class="group-title"><i data-lucide="folder-open"></i>ข้อมูลโครงการ</div>
+      <div class="field">
+        <label>ชื่อลูกค้า / โครงการ</label>
+        <div class="input-row">
+          <input type="text" id="projectName" placeholder="เช่น คุณสมชาย / โครงการบ้านสวนผึ้ง" oninput="updateProjectHeader()" style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit;">
+        </div>
+      </div>
+      <div class="pair-grid">
+        <div class="field">
+          <label>วันที่</label>
+          <div class="input-row">
+            <input type="date" id="projectDate" oninput="updateProjectHeader()" style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit;">
+          </div>
+        </div>
+        <div class="field">
+          <label>เลขที่เอกสาร <span class="hint">(รันอัตโนมัติ)</span></label>
+          <div class="input-row">
+            <input type="text" id="quotationNo" placeholder="DOC-260507-001" oninput="updateProjectHeader()" style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit;">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="group-title"><i data-lucide="zap"></i>ค่าไฟลูกค้า</div>
+
+      <div class="field">
+        <label>ประเภทอัตราค่าไฟ</label>
+        <div class="radio-group">
+          <input type="radio" id="rateNormal" name="rateType" value="normal" checked onchange="toggleRateType(); calc()">
+          <label for="rateNormal">Normal Rate</label>
+          <input type="radio" id="rateTOU" name="rateType" value="tou" onchange="toggleRateType(); calc()">
+          <label for="rateTOU">TOU Rate</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>ค่าไฟต่อเดือน <span class="hint">(บาท)</span></label>
+        <div class="input-row">
+          <input type="number" id="bill" value="5000" oninput="calc()">
+          <span class="unit-tag">บาท</span>
+        </div>
+      </div>
+
+      <div id="normalRateFields">
+        <div class="field">
+          <label>อัตราค่าไฟเฉลี่ย <span class="hint">(บาท/หน่วย)</span></label>
+          <div class="input-row">
+            <input type="number" id="rate" value="4.5" step="0.1" oninput="calc()">
+            <span class="unit-tag">฿/kWh</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="touRateFields" class="conditional">
+        <div class="field">
+          <label>On-Peak <span class="hint">(จ-ศ 9:00-22:00)</span></label>
+          <div class="input-row">
+            <input type="number" id="rateOn" value="5.7967" step="0.01" oninput="calc()">
+            <span class="unit-tag">฿/kWh</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Off-Peak <span class="hint">(เวลาอื่น+เสาร์อาทิตย์)</span></label>
+          <div class="input-row">
+            <input type="number" id="rateOff" value="2.6369" step="0.01" oninput="calc()">
+            <span class="unit-tag">฿/kWh</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>สัดส่วนใช้ on-peak <span class="range-display"><span id="onPeakPctDisp">60</span>%</span></label>
+          <input type="range" id="onPeakPct" min="20" max="80" value="60" oninput="calc()">
+        </div>
+        <div class="field" style="background: #dbeafe; padding: 10px; border-radius: 8px; font-size: 12px;">
+          <strong>💡 ชาร์จแบตจากกริด off-peak?</strong>
+          <div class="yn" style="margin-top: 6px;">
+            <button class="active" data-grp="gridCharge" data-val="0" onclick="setBtn(this); calc()">ไม่ใช่</button>
+            <button data-grp="gridCharge" data-val="1" onclick="setBtn(this); calc()">ใช่</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>สัดส่วนใช้ไฟกลางวัน <span class="range-display"><span id="dayPctDisp">35</span>%</span></label>
+        <input type="range" id="dayPct" min="20" max="70" value="35" oninput="calc()">
+      </div>
+
+      <div class="field">
+        <label>ความถี่ไฟดับ <span class="hint">(ครั้ง/ปี)</span></label>
+        <div class="yn">
+          <button data-grp="outage" data-val="rare" class="active" onclick="setBtn(this); calc()">น้อย (&lt;3)</button>
+          <button data-grp="outage" data-val="some" onclick="setBtn(this); calc()">ปานกลาง</button>
+          <button data-grp="outage" data-val="freq" onclick="setBtn(this); calc()">บ่อย (&gt;10)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="group-title"><i data-lucide="sun"></i>ระบบ Solar</div>
+
+      <!-- Toggle 0: Existing PV System -->
+      <div class="toggle-card" id="pvOldCard">
+        <label class="toggle-row" for="togglePvOld">
+          <div class="toggle-label">
+            <i data-lucide="home"></i>
+            <span>มีระบบ Solar เดิมอยู่แล้ว</span>
+          </div>
+          <div class="toggle-switch">
+            <input type="checkbox" id="togglePvOld" onchange="togglePvOldPanel()">
+            <span class="toggle-slider"></span>
+          </div>
+        </label>
+        <div class="collapsible-panel" id="pvOldPanel">
+          <div class="field">
+            <label>รุ่น Inverter เดิม <span class="hint">(เลือกแล้วจะล็อกขนาด kWp ตาม Inverter)</span></label>
+            <div class="yn" style="margin-bottom: 8px;">
+              <button data-grp="phaseFilterOld" data-val="all" class="active" onclick="setBtn(this); filterInvertersOld()">ทั้งหมด</button>
+              <button data-grp="phaseFilterOld" data-val="1" onclick="setBtn(this); filterInvertersOld()">1-phase</button>
+              <button data-grp="phaseFilterOld" data-val="3" onclick="setBtn(this); filterInvertersOld()">3-phase</button>
+            </div>
+            <div class="input-row" style="margin-bottom: 8px;">
+              <input type="text" id="invSearchOld" placeholder="🔍 ค้นหา (3 ตัวอักษร)"
+                     oninput="filterInvertersOld()"
+                     style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit;">
+              <button type="button" onclick="$('invSearchOld').value=''; filterInvertersOld();" class="unit-tag" style="border:none;cursor:pointer;font-family:inherit;">✕</button>
+            </div>
+            <select id="invModelOld" onchange="onInvOldSelect()" size="6" style="font-family: inherit; font-size: 13px; padding: 4px; width: 100%;">
+              <option value="custom|0|0|0">— ไม่ทราบรุ่น / ไม่อยู่ในรายการ —</option>
+            </select>
+            <div id="invMatchCountOld" style="font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right;"></div>
+            <div id="invInfoOld" style="display:none; margin-top: 8px; padding: 8px 10px; border-left: 3px solid; border-radius: 6px; font-size: 12px;">
+              <span id="invInfoOldText" style="font-weight: 500;"></span>
+            </div>
+          </div>
+          <div class="field" style="margin-top: 8px;">
+            <label>ขนาด kWp <span class="hint" id="pvOldHint">(ขนาดของ Inverter เดิม)</span></label>
+            <div class="input-row">
+              <input type="number" id="pvOld" value="0" step="0.5" min="0" oninput="calc()">
+              <span class="unit-tag" id="pvOldLockTag">kWp</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toggle 1: New System (PV + Inverter combined) -->
+      <div class="toggle-card" id="newSystemCard">
+        <label class="toggle-row" for="toggleNewSystem">
+          <div class="toggle-label">
+            <i data-lucide="sparkles"></i>
+            <span>ติดตั้งระบบใหม่ <span style="font-weight:400;color:var(--muted);font-size:11px;">(แผง PV + Inverter)</span></span>
+          </div>
+          <div class="toggle-switch">
+            <input type="checkbox" id="toggleNewSystem" onchange="toggleNewSystemPanel()">
+            <span class="toggle-slider"></span>
+          </div>
+        </label>
+        <div class="collapsible-panel" id="newSystemPanel">
+
+          <!-- Sub-section: แผง PV -->
+          <div style="background: #f8fafc; border-radius: 10px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border);">
+            <div style="font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="layers" style="width: 16px; height: 16px; color: var(--accent);"></i>
+              <span>แผง PV ใหม่</span>
+            </div>
+            <div class="pair-grid">
+              <div class="field">
+                <label>ยี่ห้อแผง</label>
+                <select id="pvBrand" onchange="onPvBrandChange()" style="padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; background: white; width: 100%;">
+                  <option value="">— เลือก —</option>
+                  <option>Jinko Solar</option>
+                  <option>Trina Solar</option>
+                  <option>JA Solar</option>
+                  <option>LONGi</option>
+                  <option>Canadian Solar</option>
+                  <option>Leapton</option>
+                  <option>Astronergy</option>
+                  <option>Risen Solar</option>
+                  <option>Hanwha Q-Cells</option>
+                  <option value="custom">อื่นๆ — กรอกเอง</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>รุ่น</label>
+                <div class="input-row">
+                  <input type="text" id="pvModel" placeholder="เช่น JKM550M-72HL4-V" oninput="calc()" style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit;">
+                </div>
+              </div>
+            </div>
+            <div class="pair-grid" style="margin-top: 8px;">
+              <div class="field">
+                <label>วัตต์ต่อแผง <span class="hint">(W)</span></label>
+                <div class="input-row">
+                  <input type="number" id="pvWatt" value="550" step="10" min="0" oninput="updatePvFromWatts()">
+                  <span class="unit-tag">W</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>จำนวนแผง</label>
+                <div class="input-row">
+                  <input type="number" id="pvQty" value="0" step="1" min="0" oninput="updatePvFromWatts()">
+                  <span class="unit-tag">แผง</span>
+                </div>
+              </div>
+            </div>
+            <div class="pair-grid" style="margin-top: 8px;">
+              <div class="field">
+                <label>ขนาดรวม <span class="hint">(auto-calc)</span></label>
+                <div class="input-row">
+                  <input type="number" id="pvNew" value="0" step="0.001" readonly style="background: #f0fdf4;">
+                  <span class="unit-tag">kWp 🔒</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>ราคา/วัตต์ <span class="hint">(฿/W)</span></label>
+                <div class="input-row">
+                  <input type="number" id="pricePerWatt" value="0" step="1" min="0" oninput="updatePvFromWatts()">
+                  <span class="unit-tag">฿/W</span>
+                </div>
+              </div>
+            </div>
+            <!-- Hidden field used by calc() -->
+            <input type="hidden" id="pricePV" value="0">
+            <div class="subtotal-line" style="margin-top: 8px;">
+              <span class="lbl">รวมค่าแผง PV <span style="font-size:10px; color: var(--muted); font-weight:400;">(W × จำนวน × ฿/W)</span></span>
+              <span class="amt"><span id="sub_pv">0</span> บาท</span>
+            </div>
+          </div>
+
+          <!-- Sub-section: Inverter -->
+          <div style="background: #f8fafc; border-radius: 10px; padding: 12px; border: 1px solid var(--border);">
+            <div style="font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="cpu" style="width: 16px; height: 16px; color: var(--accent);"></i>
+              <span>Inverter ใหม่</span>
+            </div>
+            <div class="field">
+              <label>เลือกรุ่น <span class="hint">(จาก Sunwoda Compatibility List)</span></label>
+              <div class="yn" style="margin-bottom: 8px;">
+                <button data-grp="phaseFilter" data-val="all" class="active" onclick="setBtn(this); filterInverters()">ทั้งหมด</button>
+                <button data-grp="phaseFilter" data-val="1" onclick="setBtn(this); filterInverters()">1-phase</button>
+                <button data-grp="phaseFilter" data-val="3" onclick="setBtn(this); filterInverters()">3-phase</button>
+              </div>
+              <div class="input-row" style="margin-bottom: 8px;">
+                <input type="text" id="invSearch" placeholder="🔍 ค้นหา (3 ตัวอักษร) เช่น Deye, Goodwe, SUN-10K..."
+                       oninput="filterInverters()"
+                       style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit;">
+                <button type="button" onclick="$('invSearch').value=''; filterInverters();" class="unit-tag" style="border:none;cursor:pointer;font-family:inherit;">✕</button>
+              </div>
+              <select id="invModel" onchange="onInvSelect()" size="6" style="font-family: inherit; font-size: 13px; padding: 4px; width: 100%;">
+                <option value="custom|0|0|0">— กรอกเอง / ไม่อยู่ในรายการ —</option>
+              </select>
+              <div id="invMatchCount" style="font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right;"></div>
+              <div id="invInfo" style="display:none; margin-top: 8px; padding: 8px 10px; background: #dbeafe; border-left: 3px solid var(--battery); border-radius: 6px; font-size: 12px;">
+                <span id="invInfoText" style="color: #1e3a8a; font-weight: 500;"></span>
+              </div>
+            </div>
+            <div class="field" style="margin-top: 8px;">
+              <label>ราคา Inverter</label>
+              <div class="input-row">
+                <input type="number" id="priceInv" value="0" step="1000" oninput="calc()">
+                <span class="unit-tag">บาท</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top: 16px;">
+        <label>Peak Sun Hours <span class="range-display"><span id="psHDisp">4.0</span> ชม./วัน</span></label>
+        <input type="range" id="psh" min="3" max="5" step="0.1" value="4.0" oninput="calc()">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="group-title"><i data-lucide="battery-charging"></i>Battery (Locked Spec)</div>
+
+      <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #bfdbfe; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 11px; color: var(--battery); font-weight: 700; letter-spacing: 1px;">SELECTED MODEL 🔒</div>
+          <div style="font-size: 15px; font-weight: 700; color: var(--primary); font-family: 'Prompt'; margin-top: 2px;">Sunwoda Atrix Max-16L-P</div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+            <div>• 16 kWh LFP</div>
+            <div>• 51.2 V (LV)</div>
+            <div>• 100% DOD</div>
+            <div>• 10,000 cycles</div>
+            <div>• IP65 Outdoor</div>
+            <div>• 10-yr Warranty</div>
+            <div>• 8 kW cont.</div>
+            <div>• 15 kW peak</div>
+          </div>
+        </div>
+        <img src="Sunwoda_Atrix_Max-16L-P.png" alt="Sunwoda Atrix Max-16L-P"
+             style="width: 80px; height: auto; flex-shrink: 0; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));">
+      </div>
+
+      <div class="pair-grid">
+        <div class="field">
+          <label>จำนวนชุด <span class="hint">(สูงสุด 32)</span></label>
+          <div class="input-row">
+            <input type="number" id="batQty" value="1" min="1" max="32" oninput="calc()">
+            <span class="unit-tag">ชุด</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>ราคา/ชุด <span class="hint">(Atrix Max-16L-P)</span></label>
+          <div class="input-row">
+            <input type="number" id="priceBat" value="75000" step="1000" oninput="calc()">
+            <span class="unit-tag">฿</span>
+          </div>
+        </div>
+      </div>
+      <div class="subtotal-line">
+        <span class="lbl">รวมค่าแบตเตอรี่</span>
+        <span class="amt"><span id="sub_bat">75,000</span> บาท</span>
+      </div>
+
+      <div class="pair-grid" style="margin-top: 12px;">
+        <div class="field">
+          <label>ความจุรวม</label>
+          <div class="input-row">
+            <input type="number" id="batKwh" value="16" readonly style="background:#f8fafc; cursor: not-allowed;">
+            <span class="unit-tag">kWh 🔒</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Efficiency <span class="hint">(LFP)</span></label>
+          <div class="input-row">
+            <input type="number" id="batEff" value="95" min="92" max="96" readonly style="background:#f8fafc; cursor: not-allowed;">
+            <span class="unit-tag">% 🔒</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="group-title"><i data-lucide="wallet"></i>ค่าติดตั้ง</div>
+
+      <div class="field">
+        <label>ค่าติดตั้ง + อุปกรณ์ไฟฟ้า <span class="hint">(สาย, MCB, SPD, ตู้)</span></label>
+        <div class="input-row">
+          <input type="number" id="priceMisc" value="5000" step="1000" oninput="calc()">
+          <span class="unit-tag">บาท</span>
+        </div>
+      </div>
+      <div class="subtotal-line" style="background: #fef3c7; border-left-color: var(--accent);">
+        <span class="lbl" style="font-weight: 600; color: var(--primary);">💵 รวมการลงทุนทั้งหมด</span>
+        <span class="amt" style="font-size: 16px;"><span id="sub_grandTotal">80,000</span> บาท</span>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="group-title"><i data-lucide="trending-up"></i>สมมติฐาน ROI</div>
+      <div class="field">
+        <label>ค่าไฟขึ้นต่อปี (Inflation)</label>
+        <div class="input-row">
+          <input type="number" id="inflation" value="3" step="0.5" min="0" max="10" oninput="calc()">
+          <span class="unit-tag">%/ปี</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>แบตเสื่อมต่อปี (Degradation)</label>
+        <div class="input-row">
+          <input type="number" id="degradation" value="2" step="0.5" min="0" max="5" oninput="calc()">
+          <span class="unit-tag">%/ปี</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <div class="splitter" id="splitter" title="ลากเพื่อปรับขนาด"></div>
+
+  <!-- ========== RESULTS PANEL ========== -->
+  <main class="panel results">
+
+    <!-- ====== Print-only: Doc Number Watermark (every page top-right) ====== -->
+    <div id="printDocWatermark" style="display:none;">—</div>
+
+    <!-- ====== Print-only: Project Info Header ====== -->
+    <div id="printProjectHeader" style="display:none; margin-bottom: 12px; padding: 14px 16px; background: linear-gradient(135deg, #0f2942 0%, #1e3a5f 100%); color: white; border-radius: 8px;">
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; align-items: center;">
+        <div>
+          <div style="font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1.5px;">โครงการ / ลูกค้า</div>
+          <div id="ph_projectName" style="font-size: 18px; font-weight: 700; font-family: 'Prompt'; margin-top: 2px;">—</div>
+        </div>
+        <div>
+          <div style="font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1.5px;">วันที่</div>
+          <div id="ph_date" style="font-size: 13px; font-weight: 600; margin-top: 2px;">—</div>
+        </div>
+        <div>
+          <div style="font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1.5px;">เลขที่เอกสาร</div>
+          <div id="ph_quoteNo" style="font-size: 13px; font-weight: 600; margin-top: 2px;">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== Print-only: Customer Inputs Summary ====== -->
+    <div id="printInputs" style="display:none; margin-bottom: 16px; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; background: #f8fafc;">
+      <h2 style="font-size: 13px; color: var(--primary); margin-bottom: 8px; font-family: 'Prompt';">📋 ข้อมูลที่ใช้คำนวณ</h2>
+      <div id="printInputsContent" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 16px; font-size: 11px;"></div>
+    </div>
+
+    <div class="scenario-buttons">
+      <span style="font-size: 12px; color: var(--muted); font-weight: 600;">📋 Scenario:</span>
+      <button class="scenario-btn active" onclick="loadScenario('A', this)">A: ขยาย PV + Battery</button>
+      <button class="scenario-btn" onclick="loadScenario('B', this)">B: Battery + TOU</button>
+      <button class="scenario-btn" onclick="loadScenario('C', this)">C: Backup Only</button>
+    </div>
+
+    <!-- ========== CUSTOMER FIT SCORE ========== -->
+    <div class="result-section">
+      <h2><i data-lucide="gauge"></i>Customer Fit Score <span class="badge internal">ขายได้/ไม่ควรขาย</span></h2>
+      <div id="fitScore" class="fit-score green">
+        <div class="fit-header">
+          <div id="fitCircle" class="fit-circle green">85</div>
+          <div class="fit-info">
+            <h3 id="fitTitle">เหมาะมาก — เดินหน้าเสนอได้เลย</h3>
+            <p id="fitSub">ลูกค้านี้มีโปรไฟล์เหมาะสมกับการลงทุนแบตเตอรี่</p>
+          </div>
+        </div>
+        <div class="fit-bars">
+          <div class="fit-bar">
+            <div class="fit-bar-head"><span>ขนาดค่าไฟ</span><span id="b1Pct">25/25</span></div>
+            <div class="fit-bar-bg"><div id="b1Fill" class="fit-bar-fill" style="width:100%"></div></div>
+          </div>
+          <div class="fit-bar">
+            <div class="fit-bar-head"><span>พฤติกรรมใช้ไฟ</span><span id="b2Pct">20/25</span></div>
+            <div class="fit-bar-bg"><div id="b2Fill" class="fit-bar-fill" style="width:80%"></div></div>
+          </div>
+          <div class="fit-bar">
+            <div class="fit-bar-head"><span>การใช้งานแบต</span><span id="b3Pct">25/25</span></div>
+            <div class="fit-bar-bg"><div id="b3Fill" class="fit-bar-fill" style="width:100%"></div></div>
+          </div>
+          <div class="fit-bar">
+            <div class="fit-bar-head"><span>ผลตอบแทน</span><span id="b4Pct">15/25</span></div>
+            <div class="fit-bar-bg"><div id="b4Fill" class="fit-bar-fill" style="width:60%"></div></div>
+          </div>
+        </div>
+        <div id="fitReasons" class="fit-reasons"></div>
+      </div>
+    </div>
+
+    <!-- Big numbers -->
+    <div class="result-section">
+      <h2><i data-lucide="bar-chart-3"></i>ผลลัพธ์การคำนวณ</h2>
+      <div class="stats-grid">
+        <div class="stat red">
+          <div class="lbl">ค่าไฟเดิม</div>
+          <div class="val" id="oldBill">5,000</div>
+          <div class="un">บาท/เดือน</div>
+        </div>
+        <div class="stat green">
+          <div class="lbl">ค่าไฟใหม่</div>
+          <div class="val" id="newBill">800</div>
+          <div class="un">บาท/เดือน</div>
+        </div>
+        <div class="stat blue">
+          <div class="lbl">ประหยัดต่อปี</div>
+          <div class="val" id="yearlySave">50,400</div>
+          <div class="un">บาท/ปี</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Payback (real)</div>
+          <div class="val" id="payback">11.1</div>
+          <div class="un">ปี</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Energy Calculation -->
+    <div class="result-section">
+      <h2><i data-lucide="zap"></i>ตารางคำนวณพลังงาน</h2>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr><th>รายการ</th><th style="text-align:right;">ค่าที่คำนวณ</th><th style="text-align:right;">ที่มา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>การใช้ไฟต่อเดือน</td><td class="num"><span id="r_monthlyUse">1,111</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">ค่าไฟ ÷ อัตรา</td></tr>
+            <tr><td>การใช้ไฟต่อวัน</td><td class="num"><span id="r_dailyUse">37.0</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">÷ 30 วัน</td></tr>
+            <tr class="subtotal"><td>• ใช้กลางวัน</td><td class="num"><span id="r_dayUse">13.0</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">× % กลางวัน</td></tr>
+            <tr class="subtotal"><td>• ใช้กลางคืน</td><td class="num"><span id="r_nightUse">24.0</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">× % กลางคืน</td></tr>
+            <tr><td>PV ผลิตได้ต่อวัน</td><td class="num"><span id="r_pvDaily">40.0</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">PV รวม × PSH</td></tr>
+            <tr class="subtotal"><td>• ใช้ Self-consume</td><td class="num"><span id="r_selfConsume">13.0</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">min(PV, Day)</td></tr>
+            <tr class="subtotal"><td>• ชาร์จแบต (จาก PV)</td><td class="num"><span id="r_toBattery">16.0</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">min(เหลือ, แบต)</td></tr>
+            <tr class="subtotal"><td>• ส่งกริด/สูญเสีย</td><td class="num"><span id="r_export">11.0</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">เกินจากแบต</td></tr>
+            <tr class="subtotal" id="rowGridChargeTr" style="display:none;"><td>• ชาร์จแบต (จากกริด off-peak)</td><td class="num"><span id="r_gridCharge">0</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">@ ราคา off-peak</td></tr>
+            <tr><td>ใช้แบตกลางคืน</td><td class="num"><span id="r_fromBattery">15.2</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">× efficiency</td></tr>
+            <tr><td>การใช้แบต (Utilization)</td><td class="num"><span id="r_batUtil">100</span>%</td><td class="num" style="color:var(--muted);font-size:12px;">เทียบความจุ</td></tr>
+            <tr class="total"><td><strong>ซื้อจากกริดต่อวัน</strong></td><td class="num"><span id="r_gridBuy">8.8</span> kWh</td><td class="num" style="color:var(--muted);font-size:12px;">→ ค่าไฟใหม่</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="warnings"></div>
+    </div>
+
+    <!-- Charts -->
+    <div class="result-section">
+      <h2><i data-lucide="line-chart"></i>กราฟวิเคราะห์</h2>
+      <div class="chart-row">
+        <div class="chart-card">
+          <h3>Energy Flow ต่อวัน (kWh)</h3>
+          <div class="chart-wrap"><canvas id="flowChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>กระแสเงินสด 25 ปี (รวม Inflation + Degradation)</h3>
+          <div class="chart-wrap"><canvas id="cashChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROI Summary -->
+    <div class="result-section">
+      <h2><i data-lucide="calculator"></i>สรุป ROI 25 ปี <span class="badge">รวม Inflation + Degradation</span></h2>
+      <div class="table-card">
+        <table>
+          <tr><td>เงินลงทุน</td><td class="num"><span id="s_invest">560,000</span> ฿</td></tr>
+          <tr><td>ประหยัดปีแรก</td><td class="num"><span id="s_yearly">50,400</span> ฿</td></tr>
+          <tr><td>ประหยัดปีที่ 10 (รวมเงินเฟ้อ)</td><td class="num"><span id="s_year10">62,000</span> ฿</td></tr>
+          <tr><td>ประหยัดปีที่ 25</td><td class="num"><span id="s_year25">85,000</span> ฿</td></tr>
+          <tr><td>Payback (Simple)</td><td class="num"><span id="s_paybackSimple">11.1</span> ปี</td></tr>
+          <tr><td>Payback (รวม inflation)</td><td class="num"><span id="s_paybackReal">9.8</span> ปี</td></tr>
+          <tr><td>ประหยัดสะสม 25 ปี</td><td class="num"><span id="s_total25">1,520,000</span> ฿</td></tr>
+          <tr class="total"><td><strong>กำไรสุทธิ 25 ปี</strong></td><td class="num"><span id="s_profit25">960,000</span> ฿</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Investment (moved to bottom) -->
+    <div class="result-section">
+      <h2><i data-lucide="coins"></i>ตารางการลงทุน</h2>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr><th>รายการ</th><th style="text-align:right;">จำนวน</th><th style="text-align:right;">ราคา/หน่วย</th><th style="text-align:right;">รวม</th></tr>
+          </thead>
+          <tbody>
+            <tr id="row_pv">
+              <td>
+                <div id="row_pv_label">PV</div>
+                <div id="row_pv_detail" style="font-size: 11px; color: var(--muted); margin-top: 2px;"></div>
+              </td>
+              <td class="num"><span id="i_pvKw">0.0</span> kWp</td>
+              <td class="num"><span id="i_pvPrice">20,000</span></td>
+              <td class="num"><span id="i_pvTotal">0</span></td>
+            </tr>
+            <tr id="row_inv">
+              <td>
+                <div id="row_inv_label">Inverter</div>
+                <div id="row_inv_detail" style="font-size: 11px; color: var(--muted); margin-top: 2px;"></div>
+              </td>
+              <td class="num">1 ชุด</td>
+              <td class="num"><span id="i_invPrice">0</span></td>
+              <td class="num"><span id="i_invTotal">0</span></td>
+            </tr>
+            <tr id="row_bat">
+              <td>
+                <div>Sunwoda Atrix Max-16L-P</div>
+                <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">16 kWh LFP · 51.2V · IP65 · 10-yr warranty</div>
+              </td>
+              <td class="num"><span id="i_batQty">1</span> ชุด</td>
+              <td class="num"><span id="i_batPrice">75,000</span></td>
+              <td class="num"><span id="i_batTotal">75,000</span></td>
+            </tr>
+            <tr id="row_misc"><td>ค่าติดตั้งและอุปกรณ์ไฟฟ้า</td><td class="num">1 lot</td><td class="num">-</td><td class="num"><span id="i_miscTotal">5,000</span></td></tr>
+          </tbody>
+        </table>
+        <!-- Extra items: user-added line items (hidden in print) -->
+        <div class="extra-items-edit-panel" style="border-top: 1px dashed var(--border); margin-top: 8px; padding-top: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">➕ รายการเพิ่มเติม</div>
+            <button onclick="addExtraItem()" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; display: inline-flex; align-items: center; gap: 4px;"><i data-lucide="plus" style="width:14px; height:14px;"></i>เพิ่มรายการ</button>
+          </div>
+          <div id="extraItemsList"></div>
+          <div id="extraItemsEmpty" style="font-size: 12px; color: var(--muted); font-style: italic; text-align: center; padding: 8px;">ยังไม่มีรายการเพิ่มเติม — กดปุ่ม "เพิ่มรายการ" เพื่อใส่ค่าวัสดุ/อุปกรณ์อื่นๆ</div>
+        </div>
+      </div>
+      <!-- Subtotal / VAT / Total Card -->
+      <div style="margin-top: 12px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid var(--accent); border-radius: 12px; padding: 18px 24px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(180, 83, 9, 0.3);">
+          <span style="font-size: 13px; color: var(--muted); font-weight: 600;">รวมการลงทุน (Subtotal)</span>
+          <span style="font-size: 16px; font-weight: 600; color: var(--primary); font-family: 'Prompt';"><span id="i_subtotal">80,000</span> บาท</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(180, 83, 9, 0.3);">
+          <span style="font-size: 13px; color: var(--muted); font-weight: 600;">ภาษีมูลค่าเพิ่ม (VAT 7%)</span>
+          <span style="font-size: 16px; font-weight: 600; color: var(--primary); font-family: 'Prompt';"><span id="i_vat">5,600</span> บาท</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px;">
+          <div>
+            <div style="font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">💵 รวมทั้งสิ้น (รวม VAT)</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Total Investment (incl. VAT)</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 32px; font-weight: 800; color: var(--primary); font-family: 'Prompt'; line-height: 1;"><span id="i_grandTotal">85,600</span> <span style="font-size: 18px;">บาท</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// === Defaults ===
+const DEFAULTS = {
+  bill: 5000, rate: 4.5, dayPct: 35,
+  rateOn: 5.7967, rateOff: 2.6369, onPeakPct: 60,
+  pvOld: 0, pvNew: 0, psh: 4.0,
+  pvWatt: 550, pvQty: 0, pricePerWatt: 0,
+  batQty: 1, batEff: 95,
+  inflation: 3, degradation: 2,
+  pricePV: 0, priceInv: 0, priceBat: 75000, priceMisc: 5000
+};
+
+const SCENARIOS = {
+  A: { pvNew: 5, batQty: 1, priceMisc: 5000 },
+  B: { pvNew: 0, batQty: 1, priceInv: 80000, priceMisc: 5000 },
+  C: { pvNew: 0, batQty: 1, priceInv: 60000, priceMisc: 5000 }
+};
+
+const btnState = { outage: 'rare', gridCharge: '0', phaseFilter: 'all', phaseFilterOld: 'all' };
+
+function $(id) { return document.getElementById(id); }
+function num(id) { return parseFloat($(id).value) || 0; }
+function fmt(n, d=0) { return n.toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d}); }
+
+let flowChart, cashChart;
+
+// === Full Sunwoda Compatibility List (LV Residential, 29 brands) ===
+const INVERTERS = [
+  { brand: 'Deye', icon: '🔵', models: [
+    { n: 'SUN-3K-SG03LP1-EU', kw: 3, ph: 1 },
+    { n: 'SUN-3.6K-SG03LP1-EU', kw: 3.6, ph: 1 },
+    { n: 'SUN-5K-SG03LP1-EU', kw: 5, ph: 1 },
+    { n: 'SUN-6K-SG03LP1-EU', kw: 6, ph: 1 },
+    { n: 'SUN-5K-SG04LP3-EU', kw: 5, ph: 3 },
+    { n: 'SUN-6K-SG04LP3-EU', kw: 6, ph: 3 },
+    { n: 'SUN-8K-SG04LP3-EU', kw: 8, ph: 3 },
+    { n: 'SUN-10K-SG04LP3-EU', kw: 10, ph: 3 },
+    { n: 'SUN-12K-SG04LP3-EU', kw: 12, ph: 3 },
+    { n: 'SUN-3.6K-SG01LP1-EU', kw: 3.6, ph: 1 },
+    { n: 'SUN-5K-SG01LP1-EU', kw: 5, ph: 1 },
+    { n: 'SUN-6K-SG01LP1-EU', kw: 6, ph: 1 },
+    { n: 'SUN-7.6K-SG01LP1-EU', kw: 7.6, ph: 1 },
+    { n: 'SUN-8K-SG01LP1-EU', kw: 8, ph: 1 },
+    { n: 'SUN-12K-SG01LP1-EU', kw: 12, ph: 1 },
+    { n: 'SUN-14K-SG01LP1-EU', kw: 14, ph: 1 },
+    { n: 'SUN-16K-SG01LP1-EU', kw: 16, ph: 1 },
+  ]},
+  { brand: 'Solis', icon: '🟠', models: [
+    { n: 'RHI-3K-48ES-5G', kw: 3, ph: 1 },
+    { n: 'RHI-4K-48ES-5G', kw: 4, ph: 1 },
+    { n: 'RHI-5K-48ES-5G', kw: 5, ph: 1 },
+    { n: 'RHI-6K-48ES-5G', kw: 6, ph: 1 },
+    { n: 'RHI-3K-48ES', kw: 3, ph: 1 },
+    { n: 'RHI-4K-48ES', kw: 4, ph: 1 },
+    { n: 'RHI-5K-48ES', kw: 5, ph: 1 },
+    { n: 'S6-EH1P3K-L', kw: 3, ph: 1 },
+    { n: 'S6-EH1P4K-L', kw: 4, ph: 1 },
+    { n: 'S6-EH1P5K-L', kw: 5, ph: 1 },
+    { n: 'S6-EH1P6K-L', kw: 6, ph: 1 },
+    { n: 'S6-EH1P3K-L-PLUS', kw: 3, ph: 1 },
+    { n: 'S6-EH1P5K-L-PLUS', kw: 5, ph: 1 },
+    { n: 'S6-EH1P6K-L-PLUS', kw: 6, ph: 1 },
+    { n: 'S6-EH1P8K-L-PLUS', kw: 8, ph: 1 },
+    { n: 'S6-EH1P10K-L-PLUS', kw: 10, ph: 1 },
+    { n: 'S6-EH3P8K02-NV-YD-L', kw: 8, ph: 3 },
+    { n: 'S6-EH3P10K02-NV-YD-L', kw: 10, ph: 3 },
+    { n: 'S6-EH3P12K02-NV-YD-L', kw: 12, ph: 3 },
+    { n: 'S6-EH3P15K02-NV-YD-L', kw: 15, ph: 3 },
+    { n: 'S5-EH1P3K-L', kw: 3, ph: 1 },
+    { n: 'S5-EH1P5K-L', kw: 5, ph: 1 },
+    { n: 'S5-EH1P6K-L', kw: 6, ph: 1 },
+  ]},
+  { brand: 'Goodwe', icon: '🟢', models: [
+    { n: 'GW3648D-ES', kw: 3.6, ph: 1 },
+    { n: 'GW5048D-ES', kw: 5, ph: 1 },
+    { n: 'GW3048-EM LV', kw: 3, ph: 1 },
+    { n: 'GW5048-EM LV', kw: 5, ph: 1 },
+    { n: 'GW3600S-BP', kw: 3.6, ph: 1 },
+    { n: 'GW5000S-BP', kw: 5, ph: 1 },
+    { n: 'GW5K-ET-L-G10', kw: 5, ph: 3 },
+    { n: 'GW6K-ET-L-G10', kw: 6, ph: 3 },
+    { n: 'GW8K-ET-L-G10', kw: 8, ph: 3 },
+    { n: 'GW10K-ET-L-G10', kw: 10, ph: 3 },
+    { n: 'GW12K-ET-L-G10', kw: 12, ph: 3 },
+    { n: 'GW15K-ET-L-G10', kw: 15, ph: 3 },
+    { n: 'GW20K-ET-L-G10', kw: 20, ph: 3 },
+  ]},
+  { brand: 'GROWATT', icon: '🔴', models: [
+    { n: 'SPH3000TL', kw: 3, ph: 1 },
+    { n: 'SPH4000TL', kw: 4, ph: 1 },
+    { n: 'SPH5000TL', kw: 5, ph: 1 },
+    { n: 'SPH6000TL', kw: 6, ph: 1 },
+  ]},
+  { brand: 'Sofar', icon: '🟣', models: [
+    { n: 'HYD 3K-EP', kw: 3, ph: 1 },
+    { n: 'HYD 4K-EP', kw: 4, ph: 1 },
+    { n: 'HYD 5K-EP', kw: 5, ph: 1 },
+    { n: 'HYD 6K-EP', kw: 6, ph: 1 },
+  ]},
+  { brand: 'SAJ', icon: '⚫', models: [
+    { n: 'H1-3K-S2', kw: 3, ph: 1 },
+    { n: 'H1-4K-S2', kw: 4, ph: 1 },
+    { n: 'H1-5K-S2', kw: 5, ph: 1 },
+    { n: 'H1-6K-S2', kw: 6, ph: 1 },
+    { n: 'H1-3K-S2-15', kw: 3, ph: 1 },
+    { n: 'H1-5K-S2-15', kw: 5, ph: 1 },
+    { n: 'H1-6K-S2-15', kw: 6, ph: 1 },
+    { n: 'H2-5K-LS2', kw: 5, ph: 3 },
+    { n: 'H2-6K-LS2', kw: 6, ph: 3 },
+    { n: 'H2-8K-LS2', kw: 8, ph: 3 },
+    { n: 'H2-10K-LS2', kw: 10, ph: 3 },
+  ]},
+  { brand: 'SMA', icon: '🔷', models: [
+    { n: 'SI 4.4-M', kw: 4.4, ph: 1 },
+    { n: 'SI 6.0-H', kw: 6, ph: 1 },
+    { n: 'SI 8.0-H', kw: 8, ph: 1 },
+  ]},
+  { brand: 'Victron', icon: '⚪', models: [
+    { n: 'MultiPlus-II 48/3000', kw: 3, ph: 1 },
+    { n: 'MultiPlus-II 48/5000', kw: 5, ph: 1 },
+    { n: 'MultiPlus-II 48/8000', kw: 8, ph: 1 },
+    { n: 'MultiPlus-II 48/10000', kw: 10, ph: 1 },
+    { n: 'Quattro 48/5000', kw: 5, ph: 1 },
+    { n: 'Quattro 48/10000', kw: 10, ph: 1 },
+    { n: 'Quattro 48/15000', kw: 15, ph: 1 },
+  ]},
+  { brand: 'Solplanet', icon: '🌐', models: [
+    { n: 'ASW3000H-S2', kw: 3, ph: 1 },
+    { n: 'ASW3680H-S2', kw: 3.68, ph: 1 },
+    { n: 'ASW4000H-S2', kw: 4, ph: 1 },
+    { n: 'ASW5000H-S2', kw: 5, ph: 1 },
+    { n: 'ASW6000H-S2', kw: 6, ph: 1 },
+  ]},
+  { brand: 'Afore', icon: '💎', models: [
+    { n: 'AF1K-SL-1', kw: 1, ph: 1 },
+    { n: 'AF1.5K-SL-1', kw: 1.5, ph: 1 },
+    { n: 'AF2K-SL-1', kw: 2, ph: 1 },
+    { n: 'AF2.5K-SL-1', kw: 2.5, ph: 1 },
+    { n: 'AF3K-SL-1', kw: 3, ph: 1 },
+    { n: 'AF3.6K-SL-1', kw: 3.6, ph: 1 },
+    { n: 'AF3K-SL', kw: 3, ph: 1 },
+    { n: 'AF4K-SL', kw: 4, ph: 1 },
+    { n: 'AF5K-SL', kw: 5, ph: 1 },
+    { n: 'AF6K-SL', kw: 6, ph: 1 },
+  ]},
+  { brand: 'invt', icon: '🔶', models: [
+    { n: 'XD3K6TL', kw: 3.6, ph: 1 },
+    { n: 'XD4KTL', kw: 4, ph: 1 },
+    { n: 'XD4K6TL', kw: 4.6, ph: 1 },
+    { n: 'XD5KTL', kw: 5, ph: 1 },
+    { n: 'XD6KTL', kw: 6, ph: 1 },
+  ]},
+  { brand: 'Luxpower', icon: '⚡', models: [
+    { n: 'LXP-LB-US 12K', kw: 12, ph: 1 },
+    { n: 'LXP3K (1ph)', kw: 3, ph: 1 },
+    { n: 'LXP3.6K (1ph)', kw: 3.6, ph: 1 },
+    { n: 'LXP4.6K (1ph)', kw: 4.6, ph: 1 },
+    { n: 'LXP6K (1ph)', kw: 6, ph: 1 },
+  ]},
+  { brand: 'Megarevo', icon: '🟤', models: [
+    { n: 'SNA3000', kw: 3, ph: 1 },
+    { n: 'SNA4000', kw: 4, ph: 1 },
+    { n: 'SNA5000', kw: 5, ph: 1 },
+    { n: 'SNA6000', kw: 6, ph: 1 },
+    { n: 'R3K-L1', kw: 3, ph: 1 },
+    { n: 'R5K-L1', kw: 5, ph: 1 },
+    { n: 'R6KL1', kw: 6, ph: 1 },
+    { n: 'R5K-LNA', kw: 5, ph: 1 },
+    { n: 'R8K-LNA', kw: 8, ph: 1 },
+    { n: 'R10KLNA', kw: 10, ph: 1 },
+  ]},
+  { brand: 'Sacolar', icon: '🌟', models: [
+    { n: 'M5000H-48BP', kw: 5, ph: 1 },
+    { n: 'MHP 3000', kw: 3, ph: 1 },
+    { n: 'MHP 5000', kw: 5, ph: 1 },
+    { n: 'MLP series', kw: 5, ph: 1 },
+    { n: 'SP series', kw: 5, ph: 1 },
+  ]},
+  { brand: 'Sol-Ark', icon: '🌞', models: [
+    { n: 'Sol-Ark-5k-P', kw: 5, ph: 1 },
+    { n: 'Sol-Ark-8k-P', kw: 8, ph: 1 },
+    { n: 'Sol-Ark-12k-P', kw: 12, ph: 1 },
+  ]},
+  { brand: 'Senergy', icon: '✨', models: [
+    { n: 'SE 3K6HB-60', kw: 3.6, ph: 1 },
+    { n: 'SE 4K6HB-120', kw: 4.6, ph: 1 },
+    { n: 'SE 5KHB-120', kw: 5, ph: 1 },
+    { n: 'SE 6KHB-120', kw: 6, ph: 1 },
+    { n: 'SE 8KHB-T/EU', kw: 8, ph: 3 },
+    { n: 'SE 10KHB-T/EU', kw: 10, ph: 3 },
+    { n: 'SE 5KHB-UL', kw: 5, ph: 1 },
+    { n: 'SE 6KHB-UL', kw: 6, ph: 1 },
+    { n: 'SE 8KHB-UL', kw: 8, ph: 1 },
+    { n: 'SE 10KHB-UL', kw: 10, ph: 1 },
+  ]},
+  { brand: 'Hoymiles', icon: '🌙', models: [
+    { n: 'HYS-LV (3K)', kw: 3, ph: 1 },
+    { n: 'HYS-LV (5K)', kw: 5, ph: 1 },
+    { n: 'HYS-LV (6K)', kw: 6, ph: 1 },
+    { n: 'HAS-LV (3K)', kw: 3, ph: 1 },
+    { n: 'HAS-LV (5K)', kw: 5, ph: 1 },
+    { n: 'HAS-LV (6K)', kw: 6, ph: 1 },
+  ]},
+  { brand: 'Voltronic Power', icon: '🔌', models: [
+    { n: 'Axpert VM III 3K', kw: 3, ph: 1 },
+    { n: 'Axpert VM III 5K', kw: 5, ph: 1 },
+    { n: 'Axpert VM 4 5K', kw: 5, ph: 1 },
+    { n: 'Axpert MKS III 5K', kw: 5, ph: 1 },
+    { n: 'Axpert MKS 4 5K', kw: 5, ph: 1 },
+    { n: 'Axpert MAX 7.2K', kw: 7.2, ph: 1 },
+    { n: 'Axpert MAX II 7.2K', kw: 7.2, ph: 1 },
+    { n: 'InfiniSolar VIII 3K', kw: 3, ph: 1 },
+    { n: 'InfiniSolar VIII 5K', kw: 5, ph: 1 },
+    { n: 'InfiniSolar 4 5K', kw: 5, ph: 1 },
+  ]},
+  { brand: 'GREENHEISS', icon: '🌳', models: [
+    { n: 'GH-IH 3 2M STYLE', kw: 3, ph: 1 },
+    { n: 'GH-IH 4 2M STYLE', kw: 4, ph: 1 },
+    { n: 'GH-IH 5 2M STYLE', kw: 5, ph: 1 },
+    { n: 'GH-IH 6 2M STYLE', kw: 6, ph: 1 },
+    { n: 'GH-IH 3 2M-15 STYLE', kw: 3, ph: 1 },
+    { n: 'GH-IH 5 2M-15 STYLE', kw: 5, ph: 1 },
+    { n: 'GH-IH 6 2M-15 STYLE', kw: 6, ph: 1 },
+  ]},
+  { brand: 'TBB', icon: '🟧', models: [
+    { n: 'RiiO Sun II 3K', kw: 3, ph: 1 },
+    { n: 'RiiO Sun II 5K', kw: 5, ph: 1 },
+    { n: 'Tyrann II 5K', kw: 5, ph: 1 },
+    { n: 'Kinergier pro II 5K', kw: 5, ph: 1 },
+    { n: 'Matrix II 5K', kw: 5, ph: 1 },
+  ]},
+  { brand: 'Sinexcel', icon: '🟦', models: [
+    { n: 'Isuna 3000S', kw: 3, ph: 1 },
+    { n: 'Isuna 4000S', kw: 4, ph: 1 },
+    { n: 'Isuna 5000S', kw: 5, ph: 1 },
+    { n: 'Isuna 6000S', kw: 6, ph: 1 },
+    { n: 'Isuna 3000SO', kw: 3, ph: 1 },
+    { n: 'Isuna 5000SO', kw: 5, ph: 1 },
+    { n: 'Isuna 8000SO', kw: 8, ph: 3 },
+    { n: 'Isuna 10000SO', kw: 10, ph: 3 },
+    { n: 'Isuna 12000SO', kw: 12, ph: 3 },
+  ]},
+  { brand: 'SRNE', icon: '🟢', models: [
+    { n: 'HFP4850S80-H', kw: 4, ph: 1 },
+    { n: 'ASP48100S200-H', kw: 5, ph: 1 },
+    { n: 'HESP4860S100-H', kw: 5, ph: 1 },
+    { n: 'HESP48100S200-H', kw: 5, ph: 1 },
+    { n: 'HESP48120S200-H', kw: 6, ph: 1 },
+  ]},
+  { brand: 'OPTI-Solar', icon: '🟨', models: [
+    { n: 'SP6000 Handy Ultra', kw: 6, ph: 1 },
+    { n: 'SP8000 Handy Ultra', kw: 8, ph: 1 },
+    { n: 'SP10000 Handy Ultra', kw: 10, ph: 1 },
+    { n: 'SP11000 Handy Ultra', kw: 11, ph: 1 },
+    { n: 'SP4000 Handy Plus', kw: 4, ph: 1 },
+    { n: 'SP5000 Handy Plus', kw: 5, ph: 1 },
+    { n: 'SP6000 Handy Plus', kw: 6, ph: 1 },
+  ]},
+  { brand: 'Turbo Energy', icon: '🚀', models: [
+    { n: 'Hybrid 48V 5.0', kw: 5, ph: 1 },
+    { n: 'Hybrid 48V 6.0', kw: 6, ph: 1 },
+    { n: '3-phase Hybrid 48V 5.0', kw: 5, ph: 3 },
+    { n: '3-phase Hybrid 48V 10.0', kw: 10, ph: 3 },
+  ]},
+  { brand: 'hypontech', icon: '🟪', models: [
+    { n: 'HES-3000', kw: 3, ph: 1 },
+    { n: 'HES-3680', kw: 3.68, ph: 1 },
+    { n: 'HES-4000', kw: 4, ph: 1 },
+    { n: 'HES-5000', kw: 5, ph: 1 },
+    { n: 'HES-6000', kw: 6, ph: 1 },
+  ]},
+  { brand: 'SolaX', icon: '☀️', models: [
+    { n: 'X1-HYB-LV 3K', kw: 3, ph: 1 },
+    { n: 'X1-HYB-LV 5K', kw: 5, ph: 1 },
+    { n: 'X1-Lite-LV', kw: 5, ph: 1 },
+  ]},
+  { brand: 'Ingeteam', icon: '🟫', models: [
+    { n: 'INGECON SUN STORAGE 1Play TL M 3kW', kw: 3, ph: 1 },
+    { n: 'INGECON SUN STORAGE 1Play TL M 4kW', kw: 4, ph: 1 },
+    { n: 'INGECON SUN STORAGE 1Play TL M 5kW', kw: 5, ph: 1 },
+    { n: 'INGECON SUN STORAGE 1Play TL M 6kW', kw: 6, ph: 1 },
+  ]},
+  { brand: 'Sungrow', icon: '🌅', models: [
+    { n: 'MG5RL', kw: 5, ph: 1 },
+    { n: 'MG6RL', kw: 6, ph: 1 },
+  ]},
+  { brand: 'Solitia', icon: '🟥', models: [
+    { n: 'S.HES-3000', kw: 3, ph: 1 },
+    { n: 'S.HES-3680', kw: 3.68, ph: 1 },
+    { n: 'S.HES-4000', kw: 4, ph: 1 },
+    { n: 'S.HES-5000', kw: 5, ph: 1 },
+    { n: 'S.HES-6000', kw: 6, ph: 1 },
+  ]},
+];
+
+function buildInverterOptions() {
+  // Now handled by filterInverters() which rebuilds options dynamically
+  filterInverters();
+}
+
+function onInvSelect() {
+  const sel = $('invModel');
+  const val = sel.value.split('|');
+  const model = val[0], kw = parseFloat(val[2]) || 0, phase = parseInt(val[3]) || 0;
+  const isModel = !sel.value.startsWith('custom');
+
+  if (!isModel) {
+    $('invInfo').style.display = 'none';
+    $('priceInv').readOnly = false;
+    $('priceInv').style.background = '';
+  } else {
+    // Auto-fill price based on kW (~7,500 ฿/kW for residential LV hybrid)
+    const estPrice = Math.round(kw * 7500 / 1000) * 1000;
+    $('priceInv').value = estPrice;
+    $('priceInv').readOnly = false;
+    $('priceInv').style.background = '';
+
+    const phaseStr = phase === 1 ? '1-phase' : (phase === 3 ? '3-phase' : '');
+    const searchQ = encodeURIComponent(model + ' datasheet pdf');
+    $('invInfoText').innerHTML =
+      `🔌 <strong>${model}</strong><br>` +
+      `${kw} kW · ${phaseStr} · LV Battery (51.2V) · เข้ากับ Sunwoda Atrix Max-16L-P ✓<br>` +
+      `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;padding:4px 10px;background:white;border:1px solid var(--battery);color:var(--battery);text-decoration:none;border-radius:6px;font-size:11px;font-weight:600;">📄 ค้นหา Datasheet ↗</a>`;
+    $('invInfo').style.display = 'block';
+  }
+  calc();
+}
+
+function togglePvOldPanel() {
+  const checked = $('togglePvOld').checked;
+  const panel = $('pvOldPanel');
+  const card = $('pvOldCard');
+  panel.classList.toggle('open', checked);
+  card.classList.toggle('active', checked);
+  if (!checked) {
+    $('pvOld').dataset.lastValue = $('pvOld').value;
+    $('pvOld').value = 0;
+  } else {
+    const last = $('pvOld').dataset.lastValue;
+    if (parseFloat($('pvOld').value) === 0) {
+      $('pvOld').value = last || 5;
+    }
+  }
+  calc();
+}
+
+function onInvOldSelect() {
+  const sel = $('invModelOld');
+  const val = sel.value.split('|');
+  const model = val[0], kw = parseFloat(val[2]) || 0, phase = parseInt(val[3]) || 0;
+  const isModel = !sel.value.startsWith('custom');
+  const info = $('invInfoOld');
+  const infoText = $('invInfoOldText');
+  const pvOldInput = $('pvOld');
+  const pvOldHint = $('pvOldHint');
+  const pvOldLockTag = $('pvOldLockTag');
+
+  if (!isModel) {
+    info.style.display = 'none';
+    // Unlock pvOld field when no model selected
+    pvOldInput.readOnly = false;
+    pvOldInput.style.background = '';
+    if (pvOldHint) pvOldHint.textContent = '(กรอกเอง)';
+    if (pvOldLockTag) pvOldLockTag.innerHTML = 'kWp';
+  } else {
+    // Lock pvOld to match Inverter's kW rating
+    pvOldInput.value = kw;
+    pvOldInput.readOnly = true;
+    pvOldInput.style.background = '#f0fdf4';
+    if (pvOldHint) pvOldHint.textContent = `(ล็อกตามขนาด ${model})`;
+    if (pvOldLockTag) pvOldLockTag.innerHTML = 'kWp 🔒';
+    const phaseStr = phase === 1 ? '1-phase' : (phase === 3 ? '3-phase' : '');
+    const searchQ = encodeURIComponent(model + ' datasheet pdf');
+    info.style.background = '#d1fae5';
+    info.style.borderColor = 'var(--success)';
+    infoText.style.color = '#064e3b';
+    infoText.innerHTML =
+      `✅ <strong>${model}</strong> รองรับ Sunwoda Atrix Max-16L-P<br>` +
+      `${kw} kW · ${phaseStr} · LV Battery (51.2V) · <strong>ใช้ของเดิมได้ ไม่ต้องซื้อ Inverter ใหม่!</strong><br>` +
+      `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;padding:4px 10px;background:white;border:1px solid var(--success);color:var(--success);text-decoration:none;border-radius:6px;font-size:11px;font-weight:600;">📄 ค้นหา Datasheet ↗</a>`;
+    info.style.display = 'block';
+  }
+  calc();
+}
+
+function filterInvertersOld() {
+  const phase = btnState.phaseFilterOld || 'all';
+  const rawSearch = ($('invSearchOld')?.value || '').toLowerCase().trim();
+  const search = rawSearch.length >= 3 ? rawSearch : '';
+  const sel = $('invModelOld');
+  if (!sel) return;
+  const previousValue = sel.value;
+
+  sel.innerHTML = '<option value="custom|0|0|0">— ไม่ทราบรุ่น / ไม่อยู่ในรายการ —</option>';
+
+  let visibleCount = 0;
+  INVERTERS.forEach(b => {
+    const matchedModels = b.models.filter(m => {
+      const fullName = (`${b.brand} ${m.n}`).toLowerCase();
+      const matchPhase = phase === 'all' || String(m.ph) === phase;
+      const matchSearch = !search || fullName.includes(search);
+      return matchPhase && matchSearch;
+    });
+    if (matchedModels.length === 0) return;
+
+    const grp = document.createElement('optgroup');
+    grp.label = `${b.icon} ${b.brand}`;
+    matchedModels.forEach(m => {
+      const opt = document.createElement('option');
+      const fullName = `${b.brand} ${m.n}`;
+      opt.value = `${fullName}|0|${m.kw}|${m.ph}`;
+      opt.textContent = `${fullName} — ${m.kw} kW / ${m.ph}-phase`;
+      grp.appendChild(opt);
+      visibleCount++;
+    });
+    sel.appendChild(grp);
+  });
+
+  const stillAvailable = Array.from(sel.options).some(o => o.value === previousValue);
+  if (stillAvailable) sel.value = previousValue;
+  else if (previousValue && !previousValue.startsWith('custom')) {
+    sel.value = 'custom|0|0|0';
+    onInvOldSelect();
+  }
+
+  const countEl = $('invMatchCountOld');
+  if (countEl) {
+    if (rawSearch.length > 0 && rawSearch.length < 3) {
+      countEl.textContent = `⌨️ พิมพ์อีก ${3 - rawSearch.length} ตัวอักษรเพื่อเริ่มค้นหา`;
+      countEl.style.color = 'var(--accent)';
+    } else if (search || phase !== 'all') {
+      countEl.textContent = visibleCount === 0 ? `❌ ไม่พบ` : `✓ พบ ${visibleCount} รุ่น`;
+      countEl.style.color = visibleCount === 0 ? 'var(--danger)' : 'var(--success)';
+    } else {
+      countEl.textContent = `รวม ${visibleCount} รุ่น จาก 29 ยี่ห้อ`;
+      countEl.style.color = 'var(--muted)';
+    }
+  }
+}
+
+function toggleNewSystemPanel() {
+  const checked = $('toggleNewSystem').checked;
+  const panel = $('newSystemPanel');
+  const card = $('newSystemCard');
+  panel.classList.toggle('open', checked);
+  card.classList.toggle('active', checked);
+  if (!checked) {
+    // When OFF: save & zero out qty + inverter price
+    $('pvQty').dataset.lastValue = $('pvQty').value;
+    $('pvQty').value = 0;
+    $('priceInv').dataset.lastValue = $('priceInv').value;
+    $('priceInv').value = 0;
+    updatePvFromWatts();
+  } else {
+    // When ON: restore last values
+    const lastQty = $('pvQty').dataset.lastValue;
+    if (parseFloat($('pvQty').value) === 0 && lastQty) {
+      $('pvQty').value = lastQty;
+    }
+    const lastInv = $('priceInv').dataset.lastValue;
+    if (parseFloat($('priceInv').value) === 0 && lastInv) {
+      $('priceInv').value = lastInv;
+    }
+    updatePvFromWatts();
+  }
+  calc();
+}
+
+function onPvBrandChange() {
+  calc();
+}
+
+// === Extra Items (custom line items in investment table) ===
+let extraItemId = 0;
+function addExtraItem() {
+  extraItemId++;
+  const id = extraItemId;
+  const div = document.createElement('div');
+  div.className = 'extra-item';
+  div.dataset.itemId = id;
+  div.style.cssText = 'display: grid; grid-template-columns: 1fr 110px 30px; gap: 8px; align-items: center; padding: 6px 0;';
+  div.innerHTML = `
+    <input type="text" class="extra-name" placeholder="ชื่อรายการ (เช่น ฉนวน, สายเพิ่มเติม, ค่าขนส่ง)" oninput="calc()" style="padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit;">
+    <input type="number" class="extra-price" placeholder="0" step="100" min="0" oninput="calc()" style="padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; text-align: right;">
+    <button type="button" onclick="removeExtraItem(${id})" title="ลบรายการ" style="background: #fee2e2; border: none; color: var(--danger); cursor: pointer; padding: 6px; border-radius: 6px; display: flex; align-items: center; justify-content: center;"><i data-lucide="trash-2" style="width: 14px; height: 14px;"></i></button>
+  `;
+  document.getElementById('extraItemsList').appendChild(div);
+  document.getElementById('extraItemsEmpty').style.display = 'none';
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+  calc();
+}
+
+function removeExtraItem(id) {
+  const item = document.querySelector(`.extra-item[data-item-id="${id}"]`);
+  if (item) item.remove();
+  if (document.querySelectorAll('.extra-item').length === 0) {
+    document.getElementById('extraItemsEmpty').style.display = '';
+  }
+  calc();
+}
+
+function numberInvestmentRows() {
+  const tbody = document.querySelector('#row_misc')?.parentElement;
+  if (!tbody) return;
+  // Walk all visible rows and prepend "#." to first td
+  let n = 1;
+  tbody.querySelectorAll('tr').forEach(tr => {
+    if (tr.style.display === 'none') return;
+    const firstTd = tr.querySelector('td:first-child');
+    if (!firstTd) return;
+    // Find the main label container (could be a div, or just textContent)
+    const numEl = firstTd.querySelector('.row-num');
+    if (numEl) {
+      numEl.textContent = `${n}.`;
+    } else {
+      // Wrap with span if not yet wrapped
+      const labelDiv = firstTd.querySelector('div:first-child');
+      if (labelDiv && !labelDiv.querySelector('.row-num')) {
+        const numSpan = document.createElement('span');
+        numSpan.className = 'row-num';
+        numSpan.style.cssText = 'color: var(--muted); font-weight: 600; margin-right: 6px;';
+        numSpan.textContent = `${n}.`;
+        labelDiv.insertBefore(numSpan, labelDiv.firstChild);
+      } else if (!labelDiv && !firstTd.querySelector('.row-num')) {
+        const numSpan = document.createElement('span');
+        numSpan.className = 'row-num';
+        numSpan.style.cssText = 'color: var(--muted); font-weight: 600; margin-right: 6px;';
+        numSpan.textContent = `${n}.`;
+        firstTd.insertBefore(numSpan, firstTd.firstChild);
+      }
+    }
+    n++;
+  });
+}
+
+function renderExtraItemsInTable(extras) {
+  // Find the misc row to insert summary lines after it
+  const tbody = document.querySelector('#row_misc')?.parentElement;
+  if (!tbody) return;
+  // Remove existing extra-summary rows
+  tbody.querySelectorAll('.extra-summary-row').forEach(r => r.remove());
+  // Add new rows for each extra
+  extras.items.forEach(it => {
+    const tr = document.createElement('tr');
+    tr.className = 'extra-summary-row';
+    tr.innerHTML = `<td>${it.name}</td><td class="num">1 lot</td><td class="num">-</td><td class="num">${it.price.toLocaleString()}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function getExtraItems() {
+  const items = [];
+  let total = 0;
+  document.querySelectorAll('.extra-item').forEach(el => {
+    const name = el.querySelector('.extra-name').value.trim();
+    const price = parseFloat(el.querySelector('.extra-price').value) || 0;
+    // Only include items with actual price (skips empty/incomplete entries)
+    if (price > 0) {
+      items.push({ name: name || '(ไม่ระบุ)', price });
+      total += price;
+    }
+  });
+  return { items, total };
+}
+
+function updatePvFromWatts() {
+  const watt = parseFloat($('pvWatt')?.value) || 0;
+  const qty = parseFloat($('pvQty')?.value) || 0;
+  const pricePerWatt = parseFloat($('pricePerWatt')?.value) || 0;
+
+  // ขนาด kWp = (W × จำนวน) / 1000
+  const kwp = (watt * qty) / 1000;
+  $('pvNew').value = kwp.toFixed(3);
+
+  // ราคา/kWp = ราคา/วัตต์ × 1000 (ใช้ภายใน calc)
+  const pricePerKwp = pricePerWatt * 1000;
+  $('pricePV').value = pricePerKwp;
+
+  calc();
+}
+
+function filterInverters() {
+  const phase = btnState.phaseFilter || 'all';
+  const rawSearch = ($('invSearch')?.value || '').toLowerCase().trim();
+  // Only apply search filter when 3+ characters typed
+  const search = rawSearch.length >= 3 ? rawSearch : '';
+  const sel = $('invModel');
+  const previousValue = sel.value;
+
+  // REBUILD select content from scratch — true hide by removing from DOM
+  // (browsers ignore display:none on <option> elements, so we rebuild instead)
+  sel.innerHTML = '<option value="custom|0|0|0">— ไม่ทราบรุ่น / ไม่อยู่ในรายการ (ต้องซื้อ Hybrid ใหม่) —</option>';
+
+  let visibleCount = 0;
+  INVERTERS.forEach(b => {
+    const matchedModels = b.models.filter(m => {
+      const fullName = (`${b.brand} ${m.n}`).toLowerCase();
+      const matchPhase = phase === 'all' || String(m.ph) === phase;
+      const matchSearch = !search || fullName.includes(search);
+      return matchPhase && matchSearch;
+    });
+
+    if (matchedModels.length === 0) return; // skip brands with no matches
+
+    const grp = document.createElement('optgroup');
+    grp.label = `${b.icon} ${b.brand}`;
+    matchedModels.forEach(m => {
+      const opt = document.createElement('option');
+      const fullName = `${b.brand} ${m.n}`;
+      opt.value = `${fullName}|0|${m.kw}|${m.ph}`;
+      opt.textContent = `${fullName} — ${m.kw} kW / ${m.ph}-phase`;
+      opt.dataset.search = fullName.toLowerCase();
+      opt.dataset.phase = String(m.ph);
+      grp.appendChild(opt);
+      visibleCount++;
+    });
+    sel.appendChild(grp);
+  });
+
+  // Restore previous selection if still available, else reset to custom
+  const stillAvailable = Array.from(sel.options).some(o => o.value === previousValue);
+  if (stillAvailable) {
+    sel.value = previousValue;
+  } else if (previousValue && !previousValue.startsWith('custom')) {
+    sel.value = 'custom|0|0|0';
+    onInvSelect();
+  }
+
+  // Update match count display
+  const countEl = $('invMatchCount');
+  if (countEl) {
+    if (rawSearch.length > 0 && rawSearch.length < 3) {
+      countEl.textContent = `⌨️ พิมพ์อีก ${3 - rawSearch.length} ตัวอักษรเพื่อเริ่มค้นหา (ตอนนี้: "${rawSearch}")`;
+      countEl.style.color = 'var(--accent)';
+    } else if (search || phase !== 'all') {
+      countEl.textContent = visibleCount === 0
+        ? `❌ ไม่พบรุ่นที่ตรงกับ "${rawSearch || ''}"`
+        : `✓ พบ ${visibleCount} รุ่น`;
+      countEl.style.color = visibleCount === 0 ? 'var(--danger)' : 'var(--success)';
+    } else {
+      countEl.textContent = `รวม ${visibleCount} รุ่น จาก 29 ยี่ห้อ`;
+      countEl.style.color = 'var(--muted)';
+    }
+  }
+}
+
+function setBtn(btn) {
+  const grp = btn.dataset.grp;
+  document.querySelectorAll(`button[data-grp="${grp}"]`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btnState[grp] = btn.dataset.val;
+}
+
+function toggleRateType() {
+  const isTOU = $('rateTOU').checked;
+  $('normalRateFields').classList.toggle('show', !isTOU);
+  $('touRateFields').classList.toggle('show', isTOU);
+  $('normalRateFields').style.display = isTOU ? 'none' : 'block';
+  $('touRateFields').style.display = isTOU ? 'block' : 'none';
+}
+
+function calc() {
+  // Inputs
+  const isTOU = $('rateTOU').checked;
+  const bill = num('bill');
+  const dayPct = num('dayPct') / 100;
+  const pvOld = num('pvOld');
+  const pvNew = num('pvNew');
+  const psh = num('psh');
+  const batQty = num('batQty');
+  const batEff = num('batEff') / 100;
+  const inflation = num('inflation') / 100;
+  const degradation = num('degradation') / 100;
+  const pricePV = num('pricePV');
+  const priceInv = num('priceInv');
+  const priceBat = num('priceBat');
+  const priceMisc = num('priceMisc');
+
+  let rateAvg, rateOn, rateOff, onPeakPct;
+  if (isTOU) {
+    rateOn = num('rateOn');
+    rateOff = num('rateOff');
+    onPeakPct = num('onPeakPct') / 100;
+    rateAvg = rateOn * onPeakPct + rateOff * (1 - onPeakPct);
+    $('onPeakPctDisp').textContent = (onPeakPct * 100).toFixed(0);
+  } else {
+    rateAvg = num('rate');
+  }
+
+  // Update displays
+  $('dayPctDisp').textContent = (dayPct * 100).toFixed(0);
+  $('psHDisp').textContent = psh.toFixed(1);
+  $('batKwh').value = batQty * 16;
+
+  // === Energy ===
+  const monthlyUse = bill / rateAvg;
+  const dailyUse = monthlyUse / 30;
+  const dayUse = dailyUse * dayPct;
+  const nightUse = dailyUse * (1 - dayPct);
+
+  const pvTotal = pvOld + pvNew;
+  const pvDaily = pvTotal * psh;
+
+  const selfConsume = Math.min(dayUse, pvDaily);
+  const dayShortage = Math.max(0, dayUse - pvDaily);
+  const surplus = Math.max(0, pvDaily - dayUse);
+  const batCapacity = batQty * 16;
+  const toBatteryFromPV = Math.min(surplus, batCapacity);
+  const exportGrid = Math.max(0, surplus - batCapacity);
+
+  // TOU grid charging
+  const useGridCharge = isTOU && btnState.gridCharge === '1';
+  const remainingBatCap = Math.max(0, batCapacity - toBatteryFromPV);
+  const gridChargeKwh = useGridCharge ? remainingBatCap : 0;
+  const totalToBattery = toBatteryFromPV + gridChargeKwh;
+
+  const fromBattery = totalToBattery * batEff;
+  const nightShortage = Math.max(0, nightUse - fromBattery);
+  const gridBuyDaily = dayShortage + nightShortage;
+  const batUtilPct = batCapacity > 0 ? (totalToBattery / batCapacity) * 100 : 0;
+
+  // === Cost calculation ===
+  let newBillMonth;
+  if (isTOU) {
+    // Estimate: night purchases mostly off-peak, day purchases mix
+    const dayGridOnPeak = dayShortage * 0.9;
+    const dayGridOff = dayShortage * 0.1;
+    const nightGridOff = nightShortage * 0.7;
+    const nightGridOn = nightShortage * 0.3;
+    const gridChargeCost = gridChargeKwh * rateOff;
+    newBillMonth = (
+      (dayGridOnPeak + nightGridOn) * rateOn +
+      (dayGridOff + nightGridOff) * rateOff +
+      gridChargeCost
+    ) * 30;
+  } else {
+    newBillMonth = gridBuyDaily * 30 * rateAvg;
+  }
+
+  const monthlySave = bill - newBillMonth;
+  const yearlySave = monthlySave * 12;
+
+  const pvCost = pvNew * pricePV;
+  const invCost = (pvNew > 0 || batQty > 0) ? priceInv : 0;
+  const batCost = batQty * priceBat;
+  const extras = getExtraItems();
+  const totalInvest = pvCost + invCost + batCost + priceMisc + extras.total;
+
+  const paybackSimple = yearlySave > 0 ? totalInvest / yearlySave : 999;
+
+  // === Compounding cashflow with inflation + degradation ===
+  let cumulative = -totalInvest;
+  const cashflowArr = [cumulative];
+  let paybackReal = 999;
+  let yearlyArr = [];
+  for (let year = 1; year <= 25; year++) {
+    const inflationFactor = Math.pow(1 + inflation, year - 1);
+    const degradationFactor = Math.pow(1 - degradation, year - 1);
+    const yearSaving = yearlySave * inflationFactor * degradationFactor;
+    yearlyArr.push(yearSaving);
+    cumulative += yearSaving;
+    cashflowArr.push(cumulative);
+    if (paybackReal === 999 && cumulative >= 0) {
+      const prev = cumulative - yearSaving;
+      paybackReal = (year - 1) + (-prev / yearSaving);
+    }
+  }
+  const total25 = yearlyArr.reduce((a, b) => a + b, 0);
+  const profit25 = total25 - totalInvest;
+
+  // === Update UI ===
+  $('r_monthlyUse').textContent = fmt(monthlyUse, 0);
+  $('r_dailyUse').textContent = fmt(dailyUse, 1);
+  $('r_dayUse').textContent = fmt(dayUse, 1);
+  $('r_nightUse').textContent = fmt(nightUse, 1);
+  $('r_pvDaily').textContent = fmt(pvDaily, 1);
+  $('r_selfConsume').textContent = fmt(selfConsume, 1);
+  $('r_toBattery').textContent = fmt(toBatteryFromPV, 1);
+  $('r_export').textContent = fmt(exportGrid, 1);
+  $('r_fromBattery').textContent = fmt(fromBattery, 1);
+  $('r_batUtil').textContent = fmt(batUtilPct, 0);
+  $('r_gridBuy').textContent = fmt(gridBuyDaily, 1);
+  $('r_gridCharge').textContent = fmt(gridChargeKwh, 1);
+  $('rowGridChargeTr').style.display = gridChargeKwh > 0 ? 'table-row' : 'none';
+
+  $('oldBill').textContent = fmt(bill, 0);
+  $('newBill').textContent = fmt(newBillMonth, 0);
+  $('yearlySave').textContent = fmt(yearlySave, 0);
+  $('payback').textContent = paybackReal < 100 ? paybackReal.toFixed(1) : '—';
+
+  $('i_pvKw').textContent = pvNew.toFixed(1);
+  $('i_pvPrice').textContent = fmt(pricePV, 0);
+  $('i_pvTotal').textContent = fmt(pvCost, 0);
+  $('i_invPrice').textContent = fmt(invCost, 0);
+  $('i_invTotal').textContent = fmt(invCost, 0);
+  $('i_batQty').textContent = batQty;
+  $('i_batPrice').textContent = fmt(priceBat, 0);
+  $('i_batTotal').textContent = fmt(batCost, 0);
+  $('i_miscTotal').textContent = fmt(priceMisc, 0);
+
+  // VAT 7% calculation
+  const vat = totalInvest * 0.07;
+  const totalWithVat = totalInvest + vat;
+  $('i_subtotal').textContent = fmt(totalInvest, 0);
+  $('i_vat').textContent = fmt(vat, 0);
+  $('i_grandTotal').textContent = fmt(totalWithVat, 0);
+
+  // Hide investment rows with no data
+  $('row_pv').style.display = (pvNew > 0 && pvCost > 0) ? '' : 'none';
+  $('row_inv').style.display = invCost > 0 ? '' : 'none';
+  $('row_bat').style.display = (batQty > 0 && batCost > 0) ? '' : 'none';
+  $('row_misc').style.display = priceMisc > 0 ? '' : 'none';
+
+  // PV row: "PV [Brand]" + sub: "Model · WattW × Qty แผง"
+  const pvBrand = $('pvBrand')?.value || '';
+  const pvModelTxt = $('pvModel')?.value?.trim() || '';
+  const pvQty = parseFloat($('pvQty')?.value) || 0;
+  const pvWatt = parseFloat($('pvWatt')?.value) || 0;
+  const pvLabel = $('row_pv_label');
+  const pvDetail = $('row_pv_detail');
+  if (pvLabel) {
+    pvLabel.textContent = (pvBrand && pvBrand !== 'custom') ? `PV ${pvBrand}` : 'PV';
+  }
+  if (pvDetail) {
+    const parts = [];
+    if (pvModelTxt) parts.push(pvModelTxt);
+    if (pvWatt > 0 && pvQty > 0) parts.push(`${pvWatt}W × ${pvQty} แผง`);
+    pvDetail.textContent = parts.join(' · ');
+  }
+
+  // Inverter row: "Inverter [Brand]" + sub: model
+  const invSel = $('invModel');
+  const invLabel = $('row_inv_label');
+  const invDetail = $('row_inv_detail');
+  if (invSel && invLabel && invDetail) {
+    const optText = invSel.options[invSel.selectedIndex]?.text || '';
+    if (optText.startsWith('—')) {
+      invLabel.textContent = 'Inverter';
+      invDetail.textContent = '';
+    } else {
+      // Strip the " — XX kW / X-phase" suffix
+      const fullName = optText.replace(/ — \d.*$/, '');
+      // Split brand (first word) and model (rest)
+      const firstSpace = fullName.indexOf(' ');
+      const brand = firstSpace > 0 ? fullName.substring(0, firstSpace) : fullName;
+      const model = firstSpace > 0 ? fullName.substring(firstSpace + 1) : '';
+      invLabel.textContent = `Inverter ${brand}`;
+      invDetail.textContent = model;
+    }
+  }
+
+  // Render extra items into investment table
+  renderExtraItemsInTable(extras);
+
+  // Inline subtotals (input panel) — show total including VAT
+  $('sub_pv').textContent = fmt(pvCost, 0);
+  $('sub_bat').textContent = fmt(batCost, 0);
+  $('sub_grandTotal').textContent = fmt(totalWithVat, 0);
+
+  // Add row numbering to visible investment rows
+  numberInvestmentRows();
+
+  $('s_invest').textContent = fmt(totalInvest, 0);
+  $('s_yearly').textContent = fmt(yearlySave, 0);
+  $('s_year10').textContent = fmt(yearlyArr[9] || 0, 0);
+  $('s_year25').textContent = fmt(yearlyArr[24] || 0, 0);
+  $('s_paybackSimple').textContent = paybackSimple < 100 ? paybackSimple.toFixed(1) : '—';
+  $('s_paybackReal').textContent = paybackReal < 100 ? paybackReal.toFixed(1) : '—';
+  $('s_total25').textContent = fmt(total25, 0);
+  $('s_profit25').textContent = fmt(profit25, 0);
+
+  // === Customer Fit Score ===
+  let s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+  const reasons = [];
+
+  // Bill score (25)
+  if (bill >= 7500) { s1 = 25; reasons.push({type:'pos', msg:'ค่าไฟสูง — มีโอกาสประหยัดเยอะ'}); }
+  else if (bill >= 5000) { s1 = 22; reasons.push({type:'pos', msg:'ค่าไฟอยู่ในเกณฑ์ดี'}); }
+  else if (bill >= 3500) { s1 = 15; }
+  else if (bill >= 2500) { s1 = 5; reasons.push({type:'neg', msg:'ค่าไฟต่ำกว่า 3,500 บาท — ROI อาจไม่คุ้ม'}); }
+  else { s1 = 0; reasons.push({type:'neg', msg:'ค่าไฟต่ำมาก — ไม่แนะนำขายแบต'}); }
+
+  // Day usage score (25) - lower is better for battery
+  if (dayPct < 0.4) { s2 = 25; reasons.push({type:'pos', msg:'ใช้ไฟกลางคืนเป็นหลัก — เหมาะมากกับแบต'}); }
+  else if (dayPct < 0.5) { s2 = 20; }
+  else if (dayPct < 0.6) { s2 = 12; }
+  else if (dayPct < 0.7) { s2 = 5; reasons.push({type:'neg', msg:'ใช้ไฟกลางวันค่อนข้างเยอะ — ขยาย PV ดีกว่า'}); }
+  else { s2 = 0; reasons.push({type:'neg', msg:'ใช้ไฟกลางวันเป็นหลัก — ไม่ควรใส่แบต ขยาย PV อย่างเดียว'}); }
+
+  // Battery utilization (25)
+  if (batUtilPct >= 90) { s3 = 25; reasons.push({type:'pos', msg:'แบตชาร์จเต็มทุกวัน — ใช้คุ้มค่า'}); }
+  else if (batUtilPct >= 70) { s3 = 22; }
+  else if (batUtilPct >= 50) { s3 = 15; reasons.push({type:'neg', msg:`แบตชาร์จได้แค่ ${batUtilPct.toFixed(0)}% — ควรเพิ่ม PV`}); }
+  else if (batUtilPct >= 30) { s3 = 8; reasons.push({type:'neg', msg:`แบตใช้ความจุแค่ ${batUtilPct.toFixed(0)}% — เกินจำเป็น`}); }
+  else { s3 = 0; reasons.push({type:'neg', msg:'แบตใหญ่เกินไปสำหรับลูกค้า — ลดขนาดหรือเพิ่ม PV'}); }
+
+  // Payback (25)
+  if (paybackReal < 7) { s4 = 25; reasons.push({type:'pos', msg:`Payback ${paybackReal.toFixed(1)} ปี — คืนทุนเร็วมาก`}); }
+  else if (paybackReal < 10) { s4 = 22; reasons.push({type:'pos', msg:`Payback ${paybackReal.toFixed(1)} ปี — ดีเยี่ยม`}); }
+  else if (paybackReal < 13) { s4 = 15; }
+  else if (paybackReal < 18) { s4 = 5; reasons.push({type:'neg', msg:`Payback ${paybackReal.toFixed(1)} ปี — ค่อนข้างยาว`}); }
+  else { s4 = 0; reasons.push({type:'neg', msg:'Payback เกิน 18 ปี — ไม่คุ้ม ปรับสเปกใหม่'}); }
+
+  // Profile bonus/penalty
+  let bonus = 0;
+  if (btnState.outage === 'freq') { bonus += 10; reasons.push({type:'pos', msg:'ไฟดับบ่อย — แบต Backup สร้างคุณค่าเพิ่ม'}); }
+  if (btnState.outage === 'some') bonus += 3;
+
+  const totalScore = Math.max(0, Math.min(100, s1 + s2 + s3 + s4 + bonus));
+
+  // Update score UI
+  $('fitCircle').textContent = Math.round(totalScore);
+  $('b1Pct').textContent = `${s1}/25`;
+  $('b2Pct').textContent = `${s2}/25`;
+  $('b3Pct').textContent = `${s3}/25`;
+  $('b4Pct').textContent = `${s4}/25`;
+  $('b1Fill').style.width = `${(s1/25)*100}%`;
+  $('b2Fill').style.width = `${(s2/25)*100}%`;
+  $('b3Fill').style.width = `${(s3/25)*100}%`;
+  $('b4Fill').style.width = `${(s4/25)*100}%`;
+
+  let level, title, sub;
+  if (totalScore >= 80) {
+    level = 'green'; title = '🌟 เหมาะมาก — ติดตั้งได้เลย';
+    sub = 'ลูกค้านี้มีโปรไฟล์เหมาะสมกับการลงทุนแบตเตอรี่';
+  } else if (totalScore >= 60) {
+    level = 'green'; title = '✅ เหมาะสม — ติดตั้งได้';
+    sub = 'ลูกค้าเหมาะกับระบบนี้ พร้อมโน้มน้าวด้วยข้อมูล ROI';
+  } else if (totalScore >= 40) {
+    level = 'yellow'; title = '⚠️ พิจารณาเงื่อนไข — ปรับสเปกก่อนติดตั้ง';
+    sub = 'ควรปรับขนาดระบบหรือคุยลูกค้าเรื่องความคาดหวังก่อน';
+  } else if (totalScore >= 25) {
+    level = 'yellow'; title = '⚠️ เสี่ยง — ติดตั้งได้ในเงื่อนไขจำกัด';
+    sub = 'พิจารณาเสนอ PV อย่างเดียว หรือลดขนาดแบต';
+  } else {
+    level = 'red'; title = '❌ ไม่แนะนำ — ลูกค้าไม่เหมาะกับการติดตั้งแบต';
+    sub = 'แนะนำเสนอทางเลือกอื่น เช่น ขยาย PV อย่างเดียว';
+  }
+
+  ['fitScore', 'fitCircle'].forEach(id => {
+    $(id).className = $(id).className.replace(/\b(green|yellow|red)\b/g, '');
+    $(id).classList.add(id === 'fitScore' ? 'fit-score' : 'fit-circle');
+    $(id).classList.add(level);
+  });
+  $('fitTitle').textContent = title;
+  $('fitSub').textContent = sub;
+
+  $('fitReasons').innerHTML = '<strong style="font-size:13px;color:var(--primary);">เหตุผลประกอบ:</strong><ul>' +
+    reasons.map(r => `<li class="${r.type}">${r.msg}</li>`).join('') + '</ul>';
+
+  // === Warnings ===
+  const warns = [];
+  if (pvDaily < dayUse) {
+    warns.push({type: 'danger', msg: `🚨 PV ผลิตน้อยกว่าใช้ไฟกลางวัน ${dayShortage.toFixed(1)} kWh — ยังต้องซื้อจากกริด`});
+  }
+  if (exportGrid > 5 && !useGridCharge) {
+    warns.push({type: 'info', msg: `💡 มีไฟส่งกริดเหลือ ${exportGrid.toFixed(1)} kWh/วัน — ลองสมัคร Net Billing เพิ่มรายได้`});
+  }
+  if (isTOU && useGridCharge) {
+    warns.push({type: 'success', msg: `✅ ใช้กลยุทธ์ TOU + ชาร์จกริด off-peak — ส่วนต่างราคา ${(rateOn-rateOff).toFixed(2)} ฿/kWh`});
+  }
+  if (paybackReal < 8 && totalScore >= 60) {
+    let stars;
+    if (paybackReal < 4 && totalScore >= 90) stars = '⭐⭐⭐⭐⭐';
+    else if (paybackReal < 6 && totalScore >= 80) stars = '⭐⭐⭐⭐';
+    else if (paybackReal < 7) stars = '⭐⭐⭐';
+    else stars = '⭐⭐';
+    warns.push({type: 'success', internal: true, msg: `🎯 Payback ${paybackReal.toFixed(1)} ปี · Score ${Math.round(totalScore)} · ${stars}`});
+  }
+
+  $('warnings').innerHTML = warns.map(w => `<div class="alert ${w.type}${w.internal ? ' internal' : ''}">${w.msg}</div>`).join('');
+
+  // === Charts ===
+  updateCharts(pvDaily, selfConsume, toBatteryFromPV, gridChargeKwh, exportGrid, fromBattery, gridBuyDaily, cashflowArr);
+}
+
+function updateCharts(pv, self, toBatPV, toBatGrid, exp, fromBat, grid, cashflowArr) {
+  if (flowChart) flowChart.destroy();
+  const labels = ['ผลิต PV', 'ใช้กลางวัน', 'ชาร์จ(PV)', 'ส่งกริด', 'ใช้แบต', 'ซื้อกริด'];
+  const data = [pv, self, toBatPV, exp, fromBat, grid];
+  const colors = ['#fbbf24', '#10b981', '#3b82f6', '#94a3b8', '#3b82f6', '#ef4444'];
+  if (toBatGrid > 0) {
+    labels.splice(3, 0, 'ชาร์จ(กริด)');
+    data.splice(3, 0, toBatGrid);
+    colors.splice(3, 0, '#8b5cf6');
+  }
+  flowChart = new Chart($('flowChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 6 }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }},
+      scales: { y: { beginAtZero: true }}
+    }
+  });
+
+  if (cashChart) cashChart.destroy();
+  const years = Array.from({length: 26}, (_, i) => 'ปี ' + i);
+  cashChart = new Chart($('cashChart'), {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [{
+        data: cashflowArr,
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.15)',
+        fill: true, tension: 0.3, borderWidth: 2.5, pointRadius: 2
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: (c) => '฿ ' + Math.round(c.raw).toLocaleString() }}
+      },
+      scales: {
+        y: { ticks: { callback: (v) => (v/1000).toFixed(0) + 'K' },
+             grid: { color: (c) => c.tick.value === 0 ? '#ef4444' : '#e2e8f0' }}
+      }
+    }
+  });
+}
+
+function loadScenario(s, btn) {
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const sc = SCENARIOS[s];
+  for (const k in sc) $(k).value = sc[k];
+  if (s === 'B') {
+    $('rateTOU').checked = true;
+    btnState.gridCharge = '1';
+    document.querySelectorAll('button[data-grp="gridCharge"]').forEach(b => b.classList.remove('active'));
+    document.querySelector('button[data-grp="gridCharge"][data-val="1"]').classList.add('active');
+    toggleRateType();
+  } else {
+    $('rateNormal').checked = true;
+    btnState.gridCharge = '0';
+    document.querySelectorAll('button[data-grp="gridCharge"]').forEach(b => b.classList.remove('active'));
+    document.querySelector('button[data-grp="gridCharge"][data-val="0"]').classList.add('active');
+    toggleRateType();
+  }
+  calc();
+}
+
+function resetDefaults() {
+  for (const k in DEFAULTS) if ($(k)) $(k).value = DEFAULTS[k];
+  $('rateNormal').checked = true;
+  $('invModel').value = 'custom|0|0|0';
+  $('invInfo').style.display = 'none';
+  $('priceInv').readOnly = false;
+  $('priceInv').style.background = '';
+  // Reset toggles
+  $('togglePvOld').checked = false;
+  $('toggleNewSystem').checked = false;
+  $('pvOldPanel').classList.remove('open');
+  $('newSystemPanel').classList.remove('open');
+  $('pvOldCard').classList.remove('active');
+  $('newSystemCard').classList.remove('active');
+  $('pvBrand').value = '';
+  $('pvModel').value = '';
+  $('invModelOld').value = 'custom|0|0|0';
+  $('invInfoOld').style.display = 'none';
+  $('invSearchOld').value = '';
+  toggleRateType();
+  btnState.outage = 'rare'; btnState.gridCharge = '0'; btnState.phaseFilter = 'all'; btnState.phaseFilterOld = 'all';
+  document.querySelectorAll('.yn button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.yn button[data-val="rare"], .yn button[data-grp="gridCharge"][data-val="0"], .yn button[data-grp="phaseFilter"][data-val="all"], .yn button[data-grp="phaseFilterOld"][data-val="all"]')
+    .forEach(b => b.classList.add('active'));
+  filterInverters();
+  filterInvertersOld();
+  calc();
+}
+
+// Set default date to today + auto-generate document number
+(function initProjectInfo() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const yy = String(yyyy).slice(-2);
+
+  const dateInput = document.getElementById('projectDate');
+  if (dateInput) dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+  // Auto-generate doc number: DOC-YYMMDD-XXX (counter resets each day, persisted in localStorage)
+  const dateKey = `${yy}${mm}${dd}`;
+  let counter = 1;
+  try {
+    const stored = JSON.parse(localStorage.getItem('docCounter') || '{}');
+    if (stored.date === dateKey) {
+      counter = (stored.counter || 0) + 1;
+    }
+    localStorage.setItem('docCounter', JSON.stringify({ date: dateKey, counter }));
+  } catch (e) {}
+
+  const docNo = `DOC-${dateKey}-${String(counter).padStart(3, '0')}`;
+  const quoteInput = document.getElementById('quotationNo');
+  if (quoteInput) quoteInput.value = docNo;
+
+  updateProjectHeader();
+})();
+
+toggleRateType();
+buildInverterOptions();
+filterInverters();
+filterInvertersOld();
+calc();
+
+// Initialize Lucide icons
+if (typeof lucide !== 'undefined') {
+  lucide.createIcons();
+}
+
+// === Splitter drag to resize ===
+(function() {
+  const splitter = document.getElementById('splitter');
+  const layout = document.querySelector('.layout');
+  if (!splitter || !layout) return;
+  let dragging = false;
+
+  function setWidth(px) {
+    const min = 280, max = Math.min(800, window.innerWidth - 400);
+    const w = Math.max(min, Math.min(max, px));
+    layout.style.gridTemplateColumns = `${w}px 6px 1fr`;
+    try { localStorage.setItem('inputPanelWidth', w); } catch(e) {}
+  }
+
+  // Restore saved width
+  try {
+    const saved = parseInt(localStorage.getItem('inputPanelWidth'));
+    if (saved && window.innerWidth > 1024) setWidth(saved);
+  } catch(e) {}
+
+  function onDown(e) {
+    dragging = true;
+    splitter.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    setWidth(x);
+    window.dispatchEvent(new Event('resize'));
+  }
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    splitter.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }
+
+  splitter.addEventListener('mousedown', onDown);
+  splitter.addEventListener('touchstart', onDown, {passive: false});
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, {passive: false});
+  document.addEventListener('mouseup', onUp);
+  document.addEventListener('touchend', onUp);
+
+  // Double-click to reset to default
+  splitter.addEventListener('dblclick', () => setWidth(380));
+
+  // Reset inline grid template before print so @media print rules take effect
+  let savedGridTemplate = '';
+  window.addEventListener('beforeprint', () => {
+    savedGridTemplate = layout.style.gridTemplateColumns;
+    layout.style.gridTemplateColumns = '';
+    populatePrintInputs();
+    updateProjectHeader();
+    const pi = document.getElementById('printInputs');
+    if (pi) pi.style.display = 'block';
+    const ph = document.getElementById('printProjectHeader');
+    if (ph) ph.style.display = 'block';
+    // Force charts to resize after layout change
+    if (typeof flowChart !== 'undefined' && flowChart) flowChart.resize();
+    if (typeof cashChart !== 'undefined' && cashChart) cashChart.resize();
+    window.dispatchEvent(new Event('resize'));
+  });
+  window.addEventListener('afterprint', () => {
+    if (savedGridTemplate) layout.style.gridTemplateColumns = savedGridTemplate;
+    const pi = document.getElementById('printInputs');
+    if (pi) pi.style.display = 'none';
+    const ph = document.getElementById('printProjectHeader');
+    if (ph) ph.style.display = 'none';
+    if (typeof flowChart !== 'undefined' && flowChart) flowChart.resize();
+    if (typeof cashChart !== 'undefined' && cashChart) cashChart.resize();
+  });
+
+  // matchMedia('print') fires AFTER @media print rules are applied — chart can resize to actual print container
+  if (window.matchMedia) {
+    const mql = window.matchMedia('print');
+    const onMqChange = () => {
+      // Resize on entering AND leaving print so charts adapt to actual container
+      if (typeof flowChart !== 'undefined' && flowChart) flowChart.resize();
+      if (typeof cashChart !== 'undefined' && cashChart) cashChart.resize();
+    };
+    if (mql.addEventListener) mql.addEventListener('change', onMqChange);
+    else if (mql.addListener) mql.addListener(onMqChange);
+  }
+})();
+
+function updateProjectHeader() {
+  const name = document.getElementById('projectName')?.value?.trim() || '—';
+  const dateInput = document.getElementById('projectDate')?.value || '';
+  const quoteNo = document.getElementById('quotationNo')?.value?.trim() || '—';
+
+  // Format date as Thai Buddhist year
+  let dateStr = '—';
+  if (dateInput) {
+    const d = new Date(dateInput);
+    const months = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    dateStr = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+  }
+
+  const phName = document.getElementById('ph_projectName');
+  const phDate = document.getElementById('ph_date');
+  const phQuote = document.getElementById('ph_quoteNo');
+  if (phName) phName.textContent = name;
+  if (phDate) phDate.textContent = dateStr;
+  if (phQuote) phQuote.textContent = quoteNo;
+
+  // Update doc number watermark (visible on every print page)
+  const watermark = document.getElementById('printDocWatermark');
+  if (watermark) watermark.textContent = quoteNo;
+}
+
+function populatePrintInputs() {
+  const container = document.getElementById('printInputsContent');
+  if (!container) return;
+
+  const isTOU = document.getElementById('rateTOU')?.checked;
+  const bill = num('bill');
+  const dayPct = num('dayPct');
+  const pvOld = num('pvOld');
+  const pvNew = num('pvNew');
+  const psh = num('psh');
+  const batQty = num('batQty');
+  const pricePV = num('pricePV');
+  const priceInv = num('priceInv');
+  const priceBat = num('priceBat');
+  const priceMisc = num('priceMisc');
+  const inflation = num('inflation');
+  const degradation = num('degradation');
+
+  const invSel = document.getElementById('invModel');
+  const invText = invSel.options[invSel.selectedIndex]?.text || 'ไม่ระบุ';
+  const invShort = invText.length > 45 ? invText.substring(0, 45) + '…' : invText;
+
+  const outageMap = { rare: 'น้อย (<3 ครั้ง/ปี)', some: 'ปานกลาง', freq: 'บ่อย (>10 ครั้ง/ปี)' };
+  const outage = outageMap[btnState.outage] || '-';
+  const gridCharge = btnState.gridCharge === '1' ? 'ใช่' : 'ไม่';
+
+  // === Grouped sections ===
+  const groups = [
+    {
+      title: '⚡ ค่าไฟลูกค้า',
+      items: [
+        ['ค่าไฟต่อเดือน', `${bill.toLocaleString()} บาท`],
+        ['อัตราค่าไฟ', isTOU
+          ? `TOU (On ${num('rateOn')} / Off ${num('rateOff')} ฿)`
+          : `${num('rate')} ฿/kWh (Normal)`],
+        ['สัดส่วนใช้ไฟกลางวัน', `${dayPct}%`],
+        ['ความถี่ไฟดับ', outage],
+        ...(isTOU ? [['ชาร์จกริด off-peak', gridCharge]] : []),
+      ]
+    },
+    {
+      title: '☀️ ระบบ Solar',
+      items: [
+        ['ขนาด PV เดิม', `${pvOld} kWp`],
+        ...(pvNew > 0 ? [
+          ['ขนาด PV ใหม่', `${pvNew} kWp`],
+          ...((document.getElementById('pvBrand')?.value || '').trim() ? [['ยี่ห้อแผง PV', document.getElementById('pvBrand').value]] : []),
+          ...((document.getElementById('pvModel')?.value || '').trim() ? [['รุ่นแผง PV', document.getElementById('pvModel').value]] : []),
+        ] : []),
+        ['Peak Sun Hours', `${psh} ชม./วัน`],
+        ...(priceInv > 0 ? [['Inverter ใหม่', invShort]] : []),
+      ]
+    },
+    {
+      title: '🔋 Battery',
+      items: [
+        ['รุ่น', 'Sunwoda Atrix Max-16L-P'],
+        ['จำนวน', `${batQty} ชุด`],
+        ['ความจุรวม', `${batQty * 16} kWh`],
+      ]
+    },
+    {
+      title: '💰 ราคา',
+      items: [
+        ...(pvNew > 0 ? [['ราคา PV / kWp', `${pricePV.toLocaleString()} บาท`]] : []),
+        ['ราคาแบต / ชุด', `${priceBat.toLocaleString()} บาท`],
+        ...(priceInv > 0 ? [['Hybrid Inverter ใหม่', `${priceInv.toLocaleString()} บาท`]] : []),
+        ...(priceMisc > 0 ? [['ค่าติดตั้ง + อุปกรณ์', `${priceMisc.toLocaleString()} บาท`]] : []),
+      ]
+    },
+    {
+      title: '📈 สมมติฐาน ROI',
+      items: [
+        ['ค่าไฟขึ้นต่อปี (Inflation)', `${inflation}%/ปี`],
+        ['แบตเสื่อมต่อปี (Degradation)', `${degradation}%/ปี`],
+      ]
+    },
+  ];
+
+  // Render: each group is a card; cards arranged in 2 columns total
+  container.style.gridTemplateColumns = 'repeat(2, 1fr)';
+  container.style.gap = '8px 12px';
+  container.innerHTML = groups.map(g => `
+    <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; background: white;">
+      <div style="font-size: 11px; font-weight: 700; color: var(--primary); padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid var(--border); font-family: 'Prompt';">
+        ${g.title}
+      </div>
+      ${g.items.map(([k, v]) => `
+        <div style="display:flex; justify-content:space-between; gap:8px; padding: 2px 0; font-size: 10.5px; line-height: 1.4;">
+          <span style="color: var(--muted);">${k}</span>
+          <span style="font-weight: 600; color: var(--primary); text-align: right;">${v}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+</script>
+
+</body>
+</html>
