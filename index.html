@@ -234,6 +234,13 @@
     background: var(--accent); color: white; border-color: var(--accent); font-weight: 600;
   }
 
+  /* SSC distributed inverter — bold blue */
+  option.we-sell {
+    font-weight: 700;
+    color: #1d4ed8;
+    background-color: #eff6ff;
+  }
+
   /* Yes/No buttons */
   .yn { display: flex; gap: 6px; }
   .yn button {
@@ -1255,6 +1262,13 @@ const INVERTERS = [
     { n: 'SUN-12K-SG01LP1-EU', kw: 12, ph: 1 },
     { n: 'SUN-14K-SG01LP1-EU', kw: 14, ph: 1 },
     { n: 'SUN-16K-SG01LP1-EU', kw: 16, ph: 1 },
+    // New models — SSC distributed (sell: true marked with ★)
+    { n: 'SUN-6K-SG04LP1-EU-SM2', kw: 6, ph: 1 },
+    { n: 'SUN-6K-SG06LP1-EU-CM2', kw: 6, ph: 1, sell: true, price: 26500 },
+    { n: 'SUN-10K-SG05LP1-EU', kw: 10, ph: 1 },
+    { n: 'SUN-10K-SG06LP1-EU-CM3', kw: 10, ph: 1, sell: true, price: 47500 },
+    { n: 'SUN-10K-SG05LP3-EU-SM2', kw: 10, ph: 3, sell: true, price: 55500 },
+    { n: 'SUN-15K-SG05LP3-EU-SM2', kw: 15, ph: 3, sell: true, price: 62500 },
   ]},
   { brand: 'Solis', icon: '🟠', models: [
     { n: 'RHI-3K-48ES-5G', kw: 3, ph: 1 },
@@ -1512,7 +1526,7 @@ function buildInverterOptions() {
 function onInvSelect() {
   const sel = $('invModel');
   const val = sel.value.split('|');
-  const model = val[0], kw = parseFloat(val[2]) || 0, phase = parseInt(val[3]) || 0;
+  const model = val[0], explicitPrice = parseFloat(val[1]) || 0, kw = parseFloat(val[2]) || 0, phase = parseInt(val[3]) || 0;
   const isModel = !sel.value.startsWith('custom');
 
   if (!isModel) {
@@ -1520,16 +1534,21 @@ function onInvSelect() {
     $('priceInv').readOnly = false;
     $('priceInv').style.background = '';
   } else {
-    // Auto-fill price based on kW (~7,500 ฿/kW for residential LV hybrid)
-    const estPrice = Math.round(kw * 7500 / 1000) * 1000;
-    $('priceInv').value = estPrice;
+    // Use explicit SSC price if available; otherwise estimate by kW (~7,500 ฿/kW)
+    const finalPrice = explicitPrice > 0
+      ? explicitPrice
+      : Math.round(kw * 7500 / 1000) * 1000;
+    $('priceInv').value = finalPrice;
     $('priceInv').readOnly = false;
-    $('priceInv').style.background = '';
+    $('priceInv').style.background = explicitPrice > 0 ? '#eff6ff' : '';
 
     const phaseStr = phase === 1 ? '1-phase' : (phase === 3 ? '3-phase' : '');
     const searchQ = encodeURIComponent(model + ' datasheet pdf');
+    const priceTag = explicitPrice > 0
+      ? `<br><span style="display:inline-block;margin-top:4px;padding:2px 8px;background:#1d4ed8;color:white;border-radius:4px;font-size:11px;font-weight:700;">★ SSC จำหน่าย • ${explicitPrice.toLocaleString()} ฿</span>`
+      : '';
     $('invInfoText').innerHTML =
-      `🔌 <strong>${model}</strong><br>` +
+      `🔌 <strong>${model}</strong>${priceTag}<br>` +
       `${kw} kW · ${phaseStr} · LV Battery (51.2V) · เข้ากับ Sunwoda Atrix Max-16L-P ✓<br>` +
       `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;padding:4px 10px;background:white;border:1px solid var(--battery);color:var(--battery);text-decoration:none;border-radius:6px;font-size:11px;font-weight:600;">📄 ค้นหา Datasheet ↗</a>`;
     $('invInfo').style.display = 'block';
@@ -1616,11 +1635,21 @@ function filterInvertersOld() {
 
     const grp = document.createElement('optgroup');
     grp.label = `${b.icon} ${b.brand}`;
+    matchedModels.sort((a, b) => (b.sell ? 1 : 0) - (a.sell ? 1 : 0));
     matchedModels.forEach(m => {
       const opt = document.createElement('option');
       const fullName = `${b.brand} ${m.n}`;
-      opt.value = `${fullName}|0|${m.kw}|${m.ph}`;
-      opt.textContent = `${fullName} — ${m.kw} kW / ${m.ph}-phase`;
+      const price = m.price || 0;
+      opt.value = `${fullName}|${price}|${m.kw}|${m.ph}`;
+      const prefix = m.sell ? '★ ' : '';
+      let suffix = '';
+      if (m.sell) {
+        suffix = price > 0
+          ? `  (SSC จำหน่าย • ${price.toLocaleString()} ฿)`
+          : '  (SSC จำหน่าย)';
+      }
+      opt.textContent = `${prefix}${fullName} — ${m.kw} kW / ${m.ph}-phase${suffix}`;
+      if (m.sell) opt.className = 'we-sell';
       grp.appendChild(opt);
       visibleCount++;
     });
@@ -1891,13 +1920,24 @@ function filterInverters() {
 
     const grp = document.createElement('optgroup');
     grp.label = `${b.icon} ${b.brand}`;
+    // Sort: SSC sell items first
+    matchedModels.sort((a, b) => (b.sell ? 1 : 0) - (a.sell ? 1 : 0));
     matchedModels.forEach(m => {
       const opt = document.createElement('option');
       const fullName = `${b.brand} ${m.n}`;
-      opt.value = `${fullName}|0|${m.kw}|${m.ph}`;
-      opt.textContent = `${fullName} — ${m.kw} kW / ${m.ph}-phase`;
+      const price = m.price || 0;
+      opt.value = `${fullName}|${price}|${m.kw}|${m.ph}`;
+      const prefix = m.sell ? '★ ' : '';
+      let suffix = '';
+      if (m.sell) {
+        suffix = price > 0
+          ? `  (SSC จำหน่าย • ${price.toLocaleString()} ฿)`
+          : '  (SSC จำหน่าย)';
+      }
+      opt.textContent = `${prefix}${fullName} — ${m.kw} kW / ${m.ph}-phase${suffix}`;
       opt.dataset.search = fullName.toLowerCase();
       opt.dataset.phase = String(m.ph);
+      if (m.sell) opt.className = 'we-sell';
       grp.appendChild(opt);
       visibleCount++;
     });
