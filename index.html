@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sunwoda Atrix Max-16L-P | Sales Calculator</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <style>
@@ -24,8 +24,9 @@
     --border: #e2e8f0;
   }
   body {
-    font-family: 'Sarabun', system-ui, sans-serif;
+    font-family: 'Prompt', system-ui, sans-serif;
     background: var(--bg); color: var(--text); line-height: 1.5; font-size: 14px;
+    font-weight: 400;
   }
   h1, h2, h3, h4 { font-family: 'Prompt', sans-serif; }
 
@@ -235,7 +236,7 @@
     line-height: 1.2;
   }
   .profile-badge .profile-hint {
-    font-family: 'Sarabun', sans-serif;
+    font-family: 'Prompt', sans-serif;
     font-size: 11px;
     color: var(--muted);
     margin-top: 2px;
@@ -274,11 +275,107 @@
     background: var(--accent); color: white; border-color: var(--accent); font-weight: 600;
   }
 
-  /* SSC distributed inverter — bold blue */
+  /* SSC distributed inverter — medium blue (legacy <option> + new custom listbox) */
   option.we-sell {
-    font-weight: 700;
+    font-weight: 500;
     color: #1d4ed8;
     background-color: #eff6ff;
+  }
+
+  /* === Custom Inverter Listbox (works on desktop AND mobile) === */
+  .inv-listbox {
+    width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    font-family: inherit;
+    font-size: 13px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .inv-listbox-group {
+    padding: 6px 10px 4px;
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 11px;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .inv-listbox-item {
+    padding: 9px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    color: #0f172a;
+    line-height: 1.35;
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.12);
+    transition: background 0.12s ease;
+  }
+  /* PV model listbox — match height/font of brand <select> next to it */
+  #pvModelListbox { font-size: 14px !important; }
+  #pvModelListbox .inv-listbox-item { padding: 12px 12px; line-height: 1.4; }
+  /* Selected (collapsed) item: single line + ellipsis (same behavior as native <select>) */
+  #pvModelListbox.collapsed .inv-listbox-item.selected {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .inv-listbox-item:last-child { border-bottom: none; }
+  .inv-listbox-item:hover { background: #f8fafc; }
+  .inv-listbox-item.selected {
+    background: #dbeafe;
+    color: #1e3a8a;
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 #2563eb;
+  }
+  .inv-listbox-item.we-sell {
+    font-weight: 500;
+    color: #1d4ed8;
+    background-color: #eff6ff;
+  }
+  .inv-listbox-item.we-sell.selected {
+    background: #bfdbfe;
+    box-shadow: inset 3px 0 0 #1d4ed8;
+  }
+  .inv-listbox-empty {
+    padding: 20px 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    font-style: italic;
+  }
+  /* === COLLAPSED state: only the selected item is visible (after user picks) === */
+  .inv-listbox.collapsed {
+    overflow: hidden;
+  }
+  .inv-listbox.collapsed .inv-listbox-group,
+  .inv-listbox.collapsed .inv-listbox-item:not(.selected) {
+    display: none !important;
+  }
+  .inv-listbox.collapsed .inv-listbox-item.selected {
+    position: relative;
+    padding-right: 36px; /* room for chevron */
+  }
+  /* Chevron icon to indicate "click to expand" */
+  .inv-listbox.collapsed .inv-listbox-item.selected::after {
+    content: '⌄';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-65%);
+    font-size: 22px;
+    color: #64748b;
+    font-weight: 400;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .inv-listbox.collapsed .inv-listbox-item.selected:hover {
+    background: #c7d2fe;
   }
 
   /* Yes/No buttons */
@@ -452,6 +549,12 @@
   }
   .chart-card h3 { font-size: 13px; color: var(--primary); margin-bottom: 8px; font-weight: 600; }
   .chart-wrap { position: relative; height: 220px; }
+  /* Cashflow row is full-width — give it more vertical room so the line isn't squeezed
+     (aspect ~2:1 — closer to Golden Ratio, no longer feels stretched horizontally) */
+  .chart-row.chart-row-full .chart-wrap { height: 420px; }
+  @media (max-width: 768px) {
+    .chart-row.chart-row-full .chart-wrap { height: 300px; }
+  }
 
   /* === SYSTEM DIAGRAM === */
   .diagram-card {
@@ -485,7 +588,7 @@
     align-items: center;
     gap: 6px;
     font-size: 12px;
-    font-family: 'Sarabun', sans-serif;
+    font-family: 'Prompt', sans-serif;
     color: #475569;
   }
   .legend-item .dot {
@@ -504,7 +607,7 @@
   .status-pill {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 5px 12px; border-radius: 20px;
-    font-family: 'Sarabun', sans-serif; font-size: 12px; font-weight: 600;
+    font-family: 'Prompt', sans-serif; font-size: 12px; font-weight: 600;
   }
   .status-pill.status-ok { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
   .status-pill.status-info { background: #dbeafe; color: #1e3a8a; border: 1px solid #93c5fd; }
@@ -553,7 +656,7 @@
     margin-left: 2px;
   }
   .stat-card .stat-label {
-    font-family: 'Sarabun', sans-serif;
+    font-family: 'Prompt', sans-serif;
     font-size: 11px; color: #64748b; margin-top: 3px;
   }
   .stat-green .stat-icon { background: #dcfce7; color: #15803d; }
@@ -632,6 +735,10 @@
       background-size: contain !important;
       background-repeat: no-repeat !important;
       background-position: left center !important;
+      /* Force browser to PRINT the background image even if "Background graphics" is OFF in print dialog */
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
     }
     .header-watermark-battery {
       display: block !important;
@@ -643,6 +750,9 @@
       bottom: 8px !important;
       filter: none !important;
       background-size: contain !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
       background-repeat: no-repeat !important;
       background-position: center !important;
     }
@@ -656,7 +766,8 @@
     .header-text p { color: #cbd5e1 !important; font-size: 11px !important; }
     .header-buttons { display: none !important; }
     header p { color: var(--muted) !important; font-size: 11px !important; }
-    header > div:first-child { display: none !important; }
+    /* Legacy rule removed — was hiding .header-watermark (user photo) accidentally
+       Photo and battery icon both need to print, controlled by their own classes above */
     /* Results panel: full width, no constraints */
     .panel, .panel.results {
       overflow: visible !important;
@@ -695,13 +806,127 @@
     .stat .lbl, .stat .un { font-size: 9px !important; }
     /* Charts: 2-column layout — give extra height for x-axis labels */
     .chart-row { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
-    .chart-wrap { height: 220px !important; }
-    .chart-card {
-      box-shadow: none !important; border: 1px solid #cbd5e1 !important; padding: 10px !important;
-      page-break-inside: avoid !important;
+    /* Full-width row (e.g. cashflow chart) should span both columns */
+    .chart-row.chart-row-full { grid-template-columns: 1fr !important; }
+    .chart-wrap {
+      height: 240px !important;
+      /* Prevent chart's overflow from bleeding into next section */
+      overflow: hidden !important;
     }
-    /* Force canvas to scale to container in print */
-    .chart-wrap canvas { max-width: 100% !important; width: 100% !important; }
+    /* Cashflow chart — taller in print so the chart doesn't look squeezed
+       (aspect ~2:1, matches Golden Ratio style) */
+    .chart-row-full .chart-wrap { height: 380px !important; }
+    .chart-card {
+      box-shadow: none !important; border: 1px solid #cbd5e1 !important; padding: 8px !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      margin-bottom: 0 !important;
+    }
+    .chart-card h3 { margin-bottom: 4px !important; font-size: 11px !important; }
+    /* Canvas sizing in print:
+       - Bar / Line: fill the wrap (height: 100%)
+       - Donut (#mixChart): DON'T force height — Chart.js draws circle, CSS stretch would make it oval */
+    .chart-wrap canvas { max-width: 100% !important; width: 100% !important; height: 100% !important; }
+    #mixChart {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 100% !important;
+      aspect-ratio: auto !important;
+    }
+    /* Keep headers together with their content (no orphaned h2/h3 at bottom of page) */
+    h2, h3 { break-after: avoid !important; page-break-after: avoid !important; }
+    /* Prevent first paragraph/element after header from breaking */
+    .result-section h2 + * { break-before: avoid !important; page-break-before: avoid !important; }
+    /* Better widow/orphan control */
+    p, li, td, div { orphans: 3; widows: 3; }
+    /* Diagram stats row also stays 4-col in print (already in inline style but reinforce) */
+    .diagram-stats { grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
+    /* Section reorder is done via JS (move DOM) on beforeprint — see injectPrintImages handler.
+       CSS flex+order doesn't reliably respect page-break rules in Chrome's print engine,
+       so we physically move elements in the DOM before print. */
+
+    /* === USER-SPECIFIED PRINT LAYOUT ===
+       Page 1: Header + Fit Score
+       Page 2: ผลลัพธ์การคำนวณ + แผนผังระบบ
+       Page 3: ตารางคำนวณพลังงาน + Energy Flow + Donut
+       Page 4: Cashflow + ROI Summary
+       Page 5: ตารางการลงทุน
+       ====================================== */
+
+    /* === PAGE LAYOUT CONTROL === */
+    /* Page 1: Header + Project + Inputs + Fit Score — keep them bonded together */
+    #printInputs { page-break-after: avoid !important; break-after: avoid !important; margin-bottom: 8px !important; }
+    .result-section.fit-section {
+      page-break-before: avoid !important; break-before: avoid !important;
+      page-break-after: always !important; break-after: always !important;
+      page-break-inside: avoid !important; break-inside: avoid !important;
+    }
+    /* KPI section: ALWAYS starts on a new page (= page 2), with diagram following on same page */
+    .result-section.kpi-section {
+      page-break-before: always !important; break-before: always !important;
+      page-break-after: avoid !important; break-after: avoid !important;
+      page-break-inside: avoid !important; break-inside: avoid !important;
+    }
+    /* System Diagram section: keep together + force break AFTER → energy-table starts page 3 */
+    .result-section.diagram-section {
+      page-break-before: avoid !important; break-before: avoid !important;
+      page-break-inside: avoid !important; break-inside: avoid !important;
+      page-break-after: always !important; break-after: always !important;
+    }
+    .diagram-section h2 { page-break-after: avoid !important; break-after: avoid !important; }
+    /* Also keep diagram-card itself together so SVG doesn't split */
+    .diagram-card { page-break-inside: avoid !important; break-inside: avoid !important; }
+    /* HIDE status bar in print — it shows clock time + mode that looks like live monitoring
+       (confusing for customers reading a static proposal) */
+    .diagram-status-bar { display: none !important; }
+    /* Energy Calculation table: keep all rows together */
+    .result-section.energy-table-section { page-break-inside: avoid !important; break-inside: avoid !important; }
+
+    /* Charts top-row (Energy Flow + Donut) — keep side-by-side together */
+    .chart-row:not(.chart-row-full) {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    /* Cashflow chart (full-width row) — keep on the SAME page as Energy Flow + Donut */
+    .chart-row.chart-row-full {
+      page-break-before: avoid !important; break-before: avoid !important;
+      page-break-inside: avoid !important;  break-inside: avoid !important;
+    }
+
+    /* ROI Summary — stays on the same page as Cashflow (no forced break) */
+    .result-section.roi-section {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-before: avoid !important; break-before: avoid !important;
+    }
+
+    /* Investment Table — FORCE NEW PAGE → page 5 */
+    .result-section.invest-section {
+      page-break-before: always !important; break-before: always !important;
+      page-break-inside: avoid !important;  break-inside: avoid !important;
+    }
+
+    /* Tables — keep ALL rows of a table on one page */
+    table { page-break-inside: avoid !important; break-inside: avoid !important; }
+    tr    { page-break-inside: avoid !important; break-inside: avoid !important; }
+    .table-card { page-break-inside: avoid !important; break-inside: avoid !important; }
+    /* Print-only <img> tags injected for watermarks (reliable photo printing) */
+    .header-watermark img.print-only-img,
+    .header-watermark-battery img.print-only-img {
+      display: block !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
+      object-position: left center !important;
+    }
+    /* Hide the underlying div's background-image in print since img now takes over (avoids double-render) */
+    .header-watermark, .header-watermark-battery {
+      background-image: none !important;
+    }
     .table-card, .card {
       box-shadow: none !important; border: 1px solid #cbd5e1 !important; padding: 10px !important;
     }
@@ -902,9 +1127,10 @@
                      style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit;">
               <button type="button" onclick="$('invSearchOld').value=''; filterInvertersOld();" class="unit-tag" style="border:none;cursor:pointer;font-family:inherit;">✕</button>
             </div>
-            <select id="invModelOld" onchange="onInvOldSelect()" size="6" style="font-family: inherit; font-size: 13px; padding: 4px; width: 100%;">
-              <option value="custom|0|0|0">— ไม่ทราบรุ่น / ไม่อยู่ในรายการ —</option>
-            </select>
+            <input type="hidden" id="invModelOld" value="custom|0|0|0">
+            <div id="invModelOldListbox" class="inv-listbox" role="listbox" aria-label="รุ่น Inverter เดิม">
+              <div class="inv-listbox-item selected" data-value="custom|0|0|0">— ไม่ทราบรุ่น / ไม่อยู่ในรายการ —</div>
+            </div>
             <div id="invMatchCountOld" style="font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right;"></div>
             <div id="invInfoOld" style="display:none; margin-top: 8px; padding: 8px 10px; border-left: 3px solid; border-radius: 6px; font-size: 12px;">
               <span id="invInfoOldText" style="font-weight: 500;"></span>
@@ -958,9 +1184,9 @@
               </div>
               <div class="field">
                 <label>รุ่น <span class="hint" id="pvModelHint">(เลือกแล้วล็อกวัตต์)</span></label>
-                <div class="input-row">
-                  <input type="text" id="pvModel" list="pvModelList" placeholder="เลือกหรือกรอกรุ่น" oninput="onPvModelInput()" style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit;">
-                  <datalist id="pvModelList"></datalist>
+                <input type="hidden" id="pvModel" value="">
+                <div id="pvModelListbox" class="inv-listbox" role="listbox" aria-label="รุ่นแผง PV" style="max-height: 200px;">
+                  <div class="inv-listbox-item selected" data-value="">— เลือกรุ่น —</div>
                 </div>
               </div>
             </div>
@@ -1023,9 +1249,10 @@
                        style="flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit;">
                 <button type="button" onclick="$('invSearch').value=''; filterInverters();" class="unit-tag" style="border:none;cursor:pointer;font-family:inherit;">✕</button>
               </div>
-              <select id="invModel" onchange="onInvSelect()" size="6" style="font-family: inherit; font-size: 13px; padding: 4px; width: 100%;">
-                <option value="custom|0|0|0">— กรอกเอง / ไม่อยู่ในรายการ —</option>
-              </select>
+              <input type="hidden" id="invModel" value="custom|0|0|0">
+              <div id="invModelListbox" class="inv-listbox" role="listbox" aria-label="รุ่น Inverter ใหม่">
+                <div class="inv-listbox-item selected" data-value="custom|0|0|0">— กรอกเอง / ไม่อยู่ในรายการ —</div>
+              </div>
               <div id="invMatchCount" style="font-size: 11px; color: var(--muted); margin-top: 4px; text-align: right;"></div>
               <div id="invInfo" style="display:none; margin-top: 8px; padding: 8px 10px; background: #dbeafe; border-left: 3px solid var(--battery); border-radius: 6px; font-size: 12px;">
                 <span id="invInfoText" style="color: #1e3a8a; font-weight: 500;"></span>
@@ -1113,10 +1340,13 @@
       <div class="group-title"><i data-lucide="wallet"></i>ค่าติดตั้ง</div>
 
       <div class="field">
-        <label>ค่าติดตั้ง + อุปกรณ์ไฟฟ้า <span class="hint">(สาย, MCB, SPD, ตู้)</span></label>
+        <label>ค่าติดตั้ง + อุปกรณ์ไฟฟ้า <span class="hint">(สาย, MCB, SPD, ตู้ — คิดต่อวัตต์รวมแผง)</span></label>
         <div class="input-row">
-          <input type="number" id="priceMisc" value="5000" step="1000" oninput="calc()">
-          <span class="unit-tag">บาท</span>
+          <input type="number" id="priceMisc" value="20" step="1" min="0" oninput="calc()">
+          <span class="unit-tag">฿/W</span>
+        </div>
+        <div class="hint" id="priceMiscTotalHint" style="margin-top: 4px; font-size: 11px; color: var(--muted);">
+          = <span id="priceMiscTotal">124,000</span> ฿ (20 × <span id="priceMiscWatts">6,200</span> W รวม)
         </div>
       </div>
       <div class="subtotal-line" style="background: #fef3c7; border-left-color: var(--accent);">
@@ -1185,7 +1415,7 @@
     </div>
 
     <!-- ========== CUSTOMER FIT SCORE ========== -->
-    <div class="result-section">
+    <div class="result-section fit-section">
       <h2><i data-lucide="gauge"></i>Customer Fit Score <span class="badge internal">ขายได้/ไม่ควรขาย</span></h2>
       <div id="fitScore" class="fit-score green">
         <div class="fit-header">
@@ -1218,7 +1448,7 @@
     </div>
 
     <!-- Big numbers -->
-    <div class="result-section">
+    <div class="result-section kpi-section">
       <h2><i data-lucide="bar-chart-3"></i>ผลลัพธ์การคำนวณ</h2>
       <div class="stats-grid">
         <div class="stat red">
@@ -1245,7 +1475,7 @@
     </div>
 
     <!-- Energy Calculation -->
-    <div class="result-section">
+    <div class="result-section energy-table-section">
       <h2><i data-lucide="zap"></i>ตารางคำนวณพลังงาน</h2>
       <div class="table-card">
         <table>
@@ -1273,7 +1503,7 @@
     </div>
 
     <!-- System Flow Diagram -->
-    <div class="result-section">
+    <div class="result-section diagram-section">
       <h2><i data-lucide="layout-grid"></i>แผนผังระบบและการไหลของพลังงาน</h2>
       <div class="diagram-card">
         <!-- Top status badges -->
@@ -1380,15 +1610,16 @@
             <!-- ========== Battery (middle-left) — slightly taller to fit SOC bar inside ========== -->
             <g class="diag-node" filter="url(#nodeShadow)">
               <rect x="45" y="220" width="190" height="140" rx="14" fill="url(#batGrad)" stroke="#6366f1" stroke-width="2"/>
-              <!-- Battery icon -->
-              <g transform="translate(70, 248)">
+              <!-- Battery icon — aligned vertically with title text -->
+              <g transform="translate(60, 252)">
                 <rect x="0" y="3" width="22" height="14" rx="2" fill="none" stroke="#4338ca" stroke-width="2"/>
                 <rect x="22" y="7" width="3" height="6" rx="0.5" fill="#4338ca"/>
                 <rect x="2" y="5" width="6" height="10" fill="#4338ca"/>
                 <rect x="9" y="5" width="6" height="10" fill="#4338ca"/>
               </g>
-              <text x="115" y="255" font-family="Prompt, sans-serif" font-size="15" font-weight="700" fill="#3730a3" id="diag_bat_title">Sunwoda 16kWh</text>
-              <text x="115" y="274" font-family="Prompt, sans-serif" font-size="11" fill="#6366f1">Atrix Max-16L-P</text>
+              <!-- Title shrunk to 14px + moved right for more breathing room from icon -->
+              <text x="98" y="265" font-family="Prompt, sans-serif" font-size="14" font-weight="700" fill="#3730a3" id="diag_bat_title">Sunwoda 16kWh</text>
+              <text x="98" y="282" font-family="Prompt, sans-serif" font-size="11" fill="#6366f1">Atrix Max-16L-P</text>
               <line x1="60" y1="288" x2="220" y2="288" stroke="#a5b4fc" stroke-width="1"/>
               <text x="60" y="308" font-family="Prompt, sans-serif" font-size="11" fill="#64748b">⇧ ชาร์จ</text>
               <text x="220" y="308" text-anchor="end" font-family="Prompt, sans-serif" font-size="13" font-weight="700" fill="#3b82f6">
@@ -1502,7 +1733,7 @@
     </div>
 
     <!-- Charts -->
-    <div class="result-section">
+    <div class="result-section charts-section">
       <h2><i data-lucide="line-chart"></i>กราฟวิเคราะห์</h2>
       <div class="chart-row">
         <div class="chart-card">
@@ -1514,7 +1745,7 @@
           <div class="chart-wrap"><canvas id="mixChart"></canvas></div>
         </div>
       </div>
-      <div class="chart-row" style="grid-template-columns: 1fr;">
+      <div class="chart-row chart-row-full" style="grid-template-columns: 1fr;">
         <div class="chart-card">
           <h3>กระแสเงินสด 25 ปี (รวม Inflation + Degradation)</h3>
           <div class="chart-wrap"><canvas id="cashChart"></canvas></div>
@@ -1523,7 +1754,7 @@
     </div>
 
     <!-- ROI Summary -->
-    <div class="result-section">
+    <div class="result-section roi-section">
       <h2><i data-lucide="calculator"></i>สรุป ROI 25 ปี <span class="badge">รวม Inflation + Degradation</span></h2>
       <div class="table-card">
         <table>
@@ -1540,7 +1771,7 @@
     </div>
 
     <!-- Investment (moved to bottom) -->
-    <div class="result-section">
+    <div class="result-section invest-section">
       <h2><i data-lucide="coins"></i>ตารางการลงทุน</h2>
       <div class="table-card">
         <table>
@@ -1575,7 +1806,7 @@
               <td class="num"><span id="i_batPrice">75,000</span></td>
               <td class="num"><span id="i_batTotal">75,000</span></td>
             </tr>
-            <tr id="row_misc"><td>ค่าติดตั้งและอุปกรณ์ไฟฟ้า</td><td class="num">1 lot</td><td class="num">-</td><td class="num"><span id="i_miscTotal">5,000</span></td></tr>
+            <tr id="row_misc"><td>ค่าติดตั้งและอุปกรณ์ไฟฟ้า</td><td class="num"><span id="i_miscQty">6,200</span> W</td><td class="num"><span id="i_miscRate">20</span></td><td class="num"><span id="i_miscTotal">124,000</span></td></tr>
           </tbody>
         </table>
         <!-- Extra items: user-added line items (hidden in print) -->
@@ -1588,23 +1819,23 @@
           <div id="extraItemsEmpty" style="font-size: 12px; color: var(--muted); font-style: italic; text-align: center; padding: 8px;">ยังไม่มีรายการเพิ่มเติม — กดปุ่ม "เพิ่มรายการ" เพื่อใส่ค่าวัสดุ/อุปกรณ์อื่นๆ</div>
         </div>
       </div>
-      <!-- Subtotal / VAT / Total Card -->
-      <div style="margin-top: 12px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid var(--accent); border-radius: 12px; padding: 18px 24px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid rgba(180, 83, 9, 0.3);">
-          <span style="font-size: 13px; color: var(--muted); font-weight: 600;">รวมการลงทุน (Subtotal)</span>
-          <span style="font-size: 16px; font-weight: 600; color: var(--primary); font-family: 'Prompt';"><span id="i_subtotal">80,000</span> บาท</span>
+      <!-- Subtotal / VAT / Total — minimal style: right-aligned labels + amounts (column-aligned) -->
+      <div style="margin-top: 14px; padding: 4px 4px 6px;">
+        <div style="display: flex; justify-content: flex-end; align-items: baseline; gap: 16px; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+          <span style="font-size: 13px; color: var(--muted); font-weight: 500; min-width: 220px; text-align: right;">รวมการลงทุน (Subtotal)</span>
+          <span style="font-size: 16px; font-weight: 600; color: var(--primary); font-family: 'Prompt'; min-width: 130px; text-align: right;"><span id="i_subtotal">80,000</span> บาท</span>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(180, 83, 9, 0.3);">
-          <span style="font-size: 13px; color: var(--muted); font-weight: 600;">ภาษีมูลค่าเพิ่ม (VAT 7%)</span>
-          <span style="font-size: 16px; font-weight: 600; color: var(--primary); font-family: 'Prompt';"><span id="i_vat">5,600</span> บาท</span>
+        <div style="display: flex; justify-content: flex-end; align-items: baseline; gap: 16px; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
+          <span style="font-size: 13px; color: var(--muted); font-weight: 500; min-width: 220px; text-align: right;">ภาษีมูลค่าเพิ่ม (VAT 7%)</span>
+          <span style="font-size: 16px; font-weight: 600; color: var(--primary); font-family: 'Prompt'; min-width: 130px; text-align: right;"><span id="i_vat">5,600</span> บาท</span>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px;">
-          <div>
-            <div style="font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">💵 รวมทั้งสิ้น (รวม VAT)</div>
+        <div style="display: flex; justify-content: flex-end; align-items: baseline; gap: 16px; padding: 14px 0 6px;">
+          <div style="text-align: right; min-width: 220px;">
+            <div style="font-size: 13px; color: var(--primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;">รวมทั้งสิ้น (รวม VAT)</div>
             <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Total Investment (incl. VAT)</div>
           </div>
-          <div style="text-align: right;">
-            <div style="font-size: 32px; font-weight: 800; color: var(--primary); font-family: 'Prompt'; line-height: 1;"><span id="i_grandTotal">85,600</span> <span style="font-size: 18px;">บาท</span></div>
+          <div style="text-align: right; min-width: 200px;">
+            <div style="font-size: 30px; font-weight: 800; color: var(--primary); font-family: 'Prompt'; line-height: 1;"><span id="i_grandTotal">85,600</span> <span style="font-size: 17px; font-weight: 600;">บาท</span></div>
           </div>
         </div>
       </div>
@@ -1624,7 +1855,7 @@ const DEFAULTS = {
   pvWatt: 620, pvQty: 10, pricePerWatt: 5,
   batQty: 1, batEff: 95,
   inflation: 3, degradation: 2,
-  pricePV: 5000, priceInv: 26500, priceBat: 75000, priceMisc: 5000
+  pricePV: 5000, priceInv: 26500, priceBat: 75000, priceMisc: 20
 };
 // Default product selection (SSC distributed)
 const DEFAULT_PV_BRAND = 'Leapton Solar';
@@ -1632,9 +1863,9 @@ const DEFAULT_PV_MODEL = 'LP182-210-M-66-NB 620W';
 const DEFAULT_INV_VALUE = 'Deye SUN-6K-SG06LP1-EU-CM2|26500|6|1';
 
 const SCENARIOS = {
-  A: { pvNew: 5, batQty: 1, priceMisc: 5000 },
-  B: { pvNew: 0, batQty: 1, priceInv: 80000, priceMisc: 5000 },
-  C: { pvNew: 0, batQty: 1, priceInv: 60000, priceMisc: 5000 }
+  A: { pvNew: 5, batQty: 1, priceMisc: 20 },
+  B: { pvNew: 0, batQty: 1, priceInv: 80000, priceMisc: 20 },
+  C: { pvNew: 0, batQty: 1, priceInv: 60000, priceMisc: 20 }
 };
 
 const btnState = { outage: 'rare', gridCharge: '0', phaseFilter: 'all', phaseFilterOld: 'all' };
@@ -1945,15 +2176,10 @@ function onInvSelect() {
     $('priceInv').readOnly = false;
     $('priceInv').style.background = explicitPrice > 0 ? '#eff6ff' : '';
 
-    const phaseStr = phase === 1 ? '1-phase' : (phase === 3 ? '3-phase' : '');
+    // Minimal info card — just the Datasheet button (info already shown in selected listbox item above)
     const searchQ = encodeURIComponent(model + ' datasheet pdf');
-    const priceTag = explicitPrice > 0
-      ? `<br><span style="display:inline-block;margin-top:4px;padding:2px 8px;background:#1d4ed8;color:white;border-radius:4px;font-size:11px;font-weight:700;">★ SSC จำหน่าย • ${explicitPrice.toLocaleString()} ฿</span>`
-      : '';
     $('invInfoText').innerHTML =
-      `🔌 <strong>${model}</strong>${priceTag}<br>` +
-      `${kw} kW · ${phaseStr} · LV Battery (51.2V) · เข้ากับ Sunwoda Atrix Max-16L-P ✓<br>` +
-      `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;padding:4px 10px;background:white;border:1px solid var(--battery);color:var(--battery);text-decoration:none;border-radius:6px;font-size:11px;font-weight:600;">📄 ค้นหา Datasheet ↗</a>`;
+      `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-block;padding:2px 7px;background:white;border:1px solid var(--battery);color:var(--battery);text-decoration:none;border-radius:5px;font-size:10px;font-weight:500;">Datasheet</a>`;
     $('invInfo').style.display = 'block';
   }
   calc();
@@ -2010,7 +2236,7 @@ function onInvOldSelect() {
     infoText.innerHTML =
       `✅ <strong>${model}</strong> รองรับ Sunwoda Atrix Max-16L-P<br>` +
       `${kw} kW · ${phaseStr} · LV Battery (51.2V) · <strong>ใช้ของเดิมได้ ไม่ต้องซื้อ Inverter ใหม่!</strong><br>` +
-      `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;padding:4px 10px;background:white;border:1px solid var(--success);color:var(--success);text-decoration:none;border-radius:6px;font-size:11px;font-weight:600;">📄 ค้นหา Datasheet ↗</a>`;
+      `<a href="https://www.google.com/search?q=${searchQ}" target="_blank" rel="noopener" style="display:inline-block;margin-top:5px;padding:2px 7px;background:white;border:1px solid var(--success);color:var(--success);text-decoration:none;border-radius:5px;font-size:10px;font-weight:500;">Datasheet</a>`;
     info.style.display = 'block';
   }
   calc();
@@ -2020,11 +2246,14 @@ function filterInvertersOld() {
   const phase = btnState.phaseFilterOld || 'all';
   const rawSearch = ($('invSearchOld')?.value || '').toLowerCase().trim();
   const search = rawSearch.length >= 3 ? rawSearch : '';
-  const sel = $('invModelOld');
-  if (!sel) return;
-  const previousValue = sel.value;
+  const hidden = $('invModelOld');
+  const listbox = $('invModelOldListbox');
+  if (!hidden || !listbox) return;
+  const previousValue = hidden.value;
 
-  sel.innerHTML = '<option value="custom|0|0|0">— ไม่ทราบรุ่น / ไม่อยู่ในรายการ —</option>';
+  // Build new listbox markup
+  let html = `<div class="inv-listbox-item" data-value="custom|0|0|0">— ไม่ทราบรุ่น / ไม่อยู่ในรายการ —</div>`;
+  const validValues = new Set(['custom|0|0|0']);
 
   let visibleCount = 0;
   INVERTERS.forEach(b => {
@@ -2036,14 +2265,13 @@ function filterInvertersOld() {
     });
     if (matchedModels.length === 0) return;
 
-    const grp = document.createElement('optgroup');
-    grp.label = `${b.icon} ${b.brand}`;
+    html += `<div class="inv-listbox-group">${b.icon} ${b.brand}</div>`;
     matchedModels.sort((a, b) => (b.sell ? 1 : 0) - (a.sell ? 1 : 0));
     matchedModels.forEach(m => {
-      const opt = document.createElement('option');
       const fullName = `${b.brand} ${m.n}`;
       const price = m.price || 0;
-      opt.value = `${fullName}|${price}|${m.kw}|${m.ph}`;
+      const val = `${fullName}|${price}|${m.kw}|${m.ph}`;
+      validValues.add(val);
       const prefix = m.sell ? '★ ' : '';
       let suffix = '';
       if (m.sell) {
@@ -2051,19 +2279,44 @@ function filterInvertersOld() {
           ? `  (SSC จำหน่าย • ${price.toLocaleString()} ฿)`
           : '  (SSC จำหน่าย)';
       }
-      opt.textContent = `${prefix}${fullName} — ${m.kw} kW / ${m.ph}-phase${suffix}`;
-      if (m.sell) opt.className = 'we-sell';
-      grp.appendChild(opt);
+      const cls = m.sell ? 'inv-listbox-item we-sell' : 'inv-listbox-item';
+      html += `<div class="${cls}" data-value="${val}">${prefix}${fullName} — ${m.kw} kW / ${m.ph}-phase${suffix}</div>`;
       visibleCount++;
     });
-    sel.appendChild(grp);
+  });
+  listbox.innerHTML = html;
+  // Wire up click handlers
+  listbox.querySelectorAll('.inv-listbox-item').forEach(item => {
+    item.addEventListener('click', () => {
+      // If listbox is collapsed and user clicks the selected item → expand again
+      if (listbox.classList.contains('collapsed')) {
+        listbox.classList.remove('collapsed');
+        return;
+      }
+      hidden.value = item.dataset.value;
+      listbox.querySelectorAll('.inv-listbox-item.selected').forEach(el => el.classList.remove('selected'));
+      item.classList.add('selected');
+      onInvOldSelect();
+      // Collapse the list so only the selected item remains visible
+      listbox.classList.add('collapsed');
+    });
   });
 
-  const stillAvailable = Array.from(sel.options).some(o => o.value === previousValue);
-  if (stillAvailable) sel.value = previousValue;
-  else if (previousValue && !previousValue.startsWith('custom')) {
-    sel.value = 'custom|0|0|0';
+  // Restore previous selection if still available
+  if (validValues.has(previousValue)) {
+    hidden.value = previousValue;
+    const selItem = listbox.querySelector(`.inv-listbox-item[data-value="${CSS.escape(previousValue)}"]`);
+    if (selItem) selItem.classList.add('selected');
+  } else if (previousValue && !previousValue.startsWith('custom')) {
+    hidden.value = 'custom|0|0|0';
+    listbox.querySelector('.inv-listbox-item[data-value="custom|0|0|0"]')?.classList.add('selected');
     onInvOldSelect();
+  } else {
+    listbox.querySelector('.inv-listbox-item[data-value="custom|0|0|0"]')?.classList.add('selected');
+  }
+  // If the search/filter just changed, EXPAND the listbox so the user can browse new results
+  if (rawSearch || phase !== 'all') {
+    listbox.classList.remove('collapsed');
   }
 
   const countEl = $('invMatchCountOld');
@@ -2149,23 +2402,45 @@ const PV_MODELS = {
 
 function onPvBrandChange() {
   const brand = $('pvBrand').value;
-  const list = $('pvModelList');
+  const listbox = $('pvModelListbox');
   const pvModelInput = $('pvModel');
-  if (list) {
-    list.innerHTML = '';
+  if (listbox) {
     const models = PV_MODELS[brand] || [];
-    models.forEach(m => {
-      const opt = document.createElement('option');
-      opt.value = m.model;
-      opt.dataset.watt = m.watt;
-      const sscSuffix = m.sell ? ' • SSC จำหน่าย ★' : '';
-      opt.textContent = `${m.watt}W${sscSuffix}`;
-      if (m.sell) opt.className = 'we-sell';
-      list.appendChild(opt);
+    let html = '';
+    if (models.length === 0) {
+      html = '<div class="inv-listbox-item selected" data-value="">— กรอกรุ่นเอง —</div>';
+    } else {
+      models.forEach((m, idx) => {
+        const cls = m.sell ? 'inv-listbox-item we-sell' : 'inv-listbox-item';
+        const selectedCls = idx === 0 ? ' selected' : '';
+        // Model name only — brand + SSC tag is already shown in the brand selector above
+        html += `<div class="${cls}${selectedCls}" data-value="${m.model}" data-watt="${m.watt}">${m.model}</div>`;
+      });
+    }
+    listbox.innerHTML = html;
+    // Wire up click handlers — same UX as inverter listbox
+    listbox.querySelectorAll('.inv-listbox-item').forEach(item => {
+      item.addEventListener('click', () => {
+        if (listbox.classList.contains('collapsed')) {
+          listbox.classList.remove('collapsed');
+          return;
+        }
+        pvModelInput.value = item.dataset.value;
+        listbox.querySelectorAll('.inv-listbox-item.selected').forEach(el => el.classList.remove('selected'));
+        item.classList.add('selected');
+        onPvModelInput();
+        listbox.classList.add('collapsed');
+      });
     });
-    // Auto-pick first model if available
-    pvModelInput.value = models[0]?.model || '';
-    onPvModelInput();
+    // Auto-pick first model + collapse listbox so it shows just the selected one
+    if (models.length > 0) {
+      pvModelInput.value = models[0].model;
+      onPvModelInput();
+      listbox.classList.add('collapsed');
+    } else {
+      pvModelInput.value = '';
+      onPvModelInput();
+    }
   }
   // Visual cue on brand input area when SSC-distributed brand selected
   const brandSel = $('pvBrand');
@@ -2173,7 +2448,7 @@ function onPvBrandChange() {
   if (hasSscModel) {
     brandSel.style.borderColor = '#1d4ed8';
     brandSel.style.background = '#eff6ff';
-    brandSel.style.fontWeight = '700';
+    brandSel.style.fontWeight = '500';
     brandSel.style.color = '#1d4ed8';
   } else {
     brandSel.style.borderColor = '';
@@ -2187,7 +2462,7 @@ function onPvBrandChange() {
 function onPvModelInput() {
   const brand = $('pvBrand').value;
   const modelInput = $('pvModel');
-  const modelText = modelInput.value.trim();
+  const modelText = (modelInput.value || '').trim();
   const matched = (PV_MODELS[brand] || []).find(m => m.model === modelText);
   const wattInput = $('pvWatt');
   const wattHint = $('pvWattHint');
@@ -2203,18 +2478,6 @@ function onPvModelInput() {
     wattInput.style.background = '';
     if (wattHint) wattHint.textContent = '(กรอกเอง)';
     if (wattTag) wattTag.textContent = 'W';
-  }
-  // Highlight model input when SSC-distributed
-  if (matched && matched.sell) {
-    modelInput.style.borderColor = '#1d4ed8';
-    modelInput.style.background = '#eff6ff';
-    modelInput.style.fontWeight = '700';
-    modelInput.style.color = '#1d4ed8';
-  } else {
-    modelInput.style.borderColor = '';
-    modelInput.style.background = '';
-    modelInput.style.fontWeight = '';
-    modelInput.style.color = '';
   }
   updatePvFromWatts();
 }
@@ -2333,12 +2596,13 @@ function filterInverters() {
   const rawSearch = ($('invSearch')?.value || '').toLowerCase().trim();
   // Only apply search filter when 3+ characters typed
   const search = rawSearch.length >= 3 ? rawSearch : '';
-  const sel = $('invModel');
-  const previousValue = sel.value;
+  const hidden = $('invModel');
+  const listbox = $('invModelListbox');
+  if (!hidden || !listbox) return;
+  const previousValue = hidden.value;
 
-  // REBUILD select content from scratch — true hide by removing from DOM
-  // (browsers ignore display:none on <option> elements, so we rebuild instead)
-  sel.innerHTML = '<option value="custom|0|0|0">— ไม่ทราบรุ่น / ไม่อยู่ในรายการ —</option>';
+  let html = `<div class="inv-listbox-item" data-value="custom|0|0|0">— กรอกเอง / ไม่อยู่ในรายการ —</div>`;
+  const validValues = new Set(['custom|0|0|0']);
 
   let visibleCount = 0;
   INVERTERS.forEach(b => {
@@ -2348,18 +2612,15 @@ function filterInverters() {
       const matchSearch = !search || fullName.includes(search);
       return matchPhase && matchSearch;
     });
+    if (matchedModels.length === 0) return;
 
-    if (matchedModels.length === 0) return; // skip brands with no matches
-
-    const grp = document.createElement('optgroup');
-    grp.label = `${b.icon} ${b.brand}`;
-    // Sort: SSC sell items first
+    html += `<div class="inv-listbox-group">${b.icon} ${b.brand}</div>`;
     matchedModels.sort((a, b) => (b.sell ? 1 : 0) - (a.sell ? 1 : 0));
     matchedModels.forEach(m => {
-      const opt = document.createElement('option');
       const fullName = `${b.brand} ${m.n}`;
       const price = m.price || 0;
-      opt.value = `${fullName}|${price}|${m.kw}|${m.ph}`;
+      const val = `${fullName}|${price}|${m.kw}|${m.ph}`;
+      validValues.add(val);
       const prefix = m.sell ? '★ ' : '';
       let suffix = '';
       if (m.sell) {
@@ -2367,23 +2628,44 @@ function filterInverters() {
           ? `  (SSC จำหน่าย • ${price.toLocaleString()} ฿)`
           : '  (SSC จำหน่าย)';
       }
-      opt.textContent = `${prefix}${fullName} — ${m.kw} kW / ${m.ph}-phase${suffix}`;
-      opt.dataset.search = fullName.toLowerCase();
-      opt.dataset.phase = String(m.ph);
-      if (m.sell) opt.className = 'we-sell';
-      grp.appendChild(opt);
+      const cls = m.sell ? 'inv-listbox-item we-sell' : 'inv-listbox-item';
+      html += `<div class="${cls}" data-value="${val}">${prefix}${fullName} — ${m.kw} kW / ${m.ph}-phase${suffix}</div>`;
       visibleCount++;
     });
-    sel.appendChild(grp);
+  });
+  listbox.innerHTML = html;
+  // Wire up click handlers
+  listbox.querySelectorAll('.inv-listbox-item').forEach(item => {
+    item.addEventListener('click', () => {
+      // If listbox is collapsed and user clicks the selected item → expand again
+      if (listbox.classList.contains('collapsed')) {
+        listbox.classList.remove('collapsed');
+        return;
+      }
+      hidden.value = item.dataset.value;
+      listbox.querySelectorAll('.inv-listbox-item.selected').forEach(el => el.classList.remove('selected'));
+      item.classList.add('selected');
+      onInvSelect();
+      // Collapse the list so only the selected item remains visible
+      listbox.classList.add('collapsed');
+    });
   });
 
   // Restore previous selection if still available, else reset to custom
-  const stillAvailable = Array.from(sel.options).some(o => o.value === previousValue);
-  if (stillAvailable) {
-    sel.value = previousValue;
+  if (validValues.has(previousValue)) {
+    hidden.value = previousValue;
+    const selItem = listbox.querySelector(`.inv-listbox-item[data-value="${CSS.escape(previousValue)}"]`);
+    if (selItem) selItem.classList.add('selected');
   } else if (previousValue && !previousValue.startsWith('custom')) {
-    sel.value = 'custom|0|0|0';
+    hidden.value = 'custom|0|0|0';
+    listbox.querySelector('.inv-listbox-item[data-value="custom|0|0|0"]')?.classList.add('selected');
     onInvSelect();
+  } else {
+    listbox.querySelector('.inv-listbox-item[data-value="custom|0|0|0"]')?.classList.add('selected');
+  }
+  // If the search/filter just changed, EXPAND the listbox so the user can browse new results
+  if (rawSearch || phase !== 'all') {
+    listbox.classList.remove('collapsed');
   }
 
   // Update match count display
@@ -2450,7 +2732,10 @@ function calc() {
   const pricePV = num('pricePV');
   const priceInv = num('priceInv');
   const priceBat = num('priceBat');
-  const priceMisc = num('priceMisc');
+  // priceMisc is the rate in ฿/W — multiply by total panel watts to get total install cost
+  const priceMiscRate = num('priceMisc');
+  const _pvWattTotal = (num('pvWatt') * num('pvQty')) || 0;
+  const priceMisc = priceMiscRate * _pvWattTotal;
 
   let rateAvg, rateOn, rateOff, onPeakPct;
   if (isTOU) {
@@ -2590,7 +2875,13 @@ function calc() {
   $('i_batQty').textContent = batQty;
   $('i_batPrice').textContent = fmt(priceBat, 0);
   $('i_batTotal').textContent = fmt(batCost, 0);
+  // Misc cost: rate × total watts breakdown
+  if ($('i_miscQty')) $('i_miscQty').textContent = _pvWattTotal.toLocaleString();
+  if ($('i_miscRate')) $('i_miscRate').textContent = priceMiscRate.toLocaleString();
   $('i_miscTotal').textContent = fmt(priceMisc, 0);
+  // Update inline hint under input field
+  if ($('priceMiscTotal')) $('priceMiscTotal').textContent = priceMisc.toLocaleString();
+  if ($('priceMiscWatts')) $('priceMiscWatts').textContent = _pvWattTotal.toLocaleString();
 
   // VAT 7% calculation
   const vat = totalInvest * 0.07;
@@ -2618,7 +2909,12 @@ function calc() {
   if (pvDetail) {
     const parts = [];
     if (pvModelTxt) parts.push(pvModelTxt);
-    if (pvWatt > 0 && pvQty > 0) parts.push(`${pvWatt}W × ${pvQty} แผง`);
+    if (pvWatt > 0 && pvQty > 0) {
+      parts.push(`${pvWatt}W × ${pvQty} แผง`);
+      const totalW = pvWatt * pvQty;
+      const totalKwp = totalW / 1000;
+      parts.push(`รวม ${totalW.toLocaleString()} W (${totalKwp.toFixed(2)} kWp)`);
+    }
     pvDetail.textContent = parts.join(' · ');
   }
 
@@ -2627,13 +2923,12 @@ function calc() {
   const invLabel = $('row_inv_label');
   const invDetail = $('row_inv_detail');
   if (invSel && invLabel && invDetail) {
-    const optText = invSel.options[invSel.selectedIndex]?.text || '';
-    if (optText.startsWith('—')) {
+    const invVal = (invSel.value || '').split('|');
+    const fullName = invVal[0] || '';
+    if (!fullName || fullName.startsWith('custom') || fullName.startsWith('—')) {
       invLabel.textContent = 'Inverter';
       invDetail.textContent = '';
     } else {
-      // Strip the " — XX kW / X-phase" suffix
-      const fullName = optText.replace(/ — \d.*$/, '');
       // Split brand (first word) and model (rest)
       const firstSpace = fullName.indexOf(' ');
       const brand = firstSpace > 0 ? fullName.substring(0, firstSpace) : fullName;
@@ -3032,7 +3327,7 @@ function updateCharts(pv, self, toBatPV, toBatGrid, exp, fromBat, grid, cashflow
         ctx.setLineDash([]);
         // Label on the right
         ctx.fillStyle = '#64748b';
-        ctx.font = '600 10px "Sarabun", sans-serif';
+        ctx.font = '600 10px "Prompt", sans-serif';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
         ctx.fillText(`ความต้องการต่อวัน ${dailyDemand.toFixed(1)} kWh`, chartArea.right - 4, yPos - 2);
@@ -3051,7 +3346,7 @@ function updateCharts(pv, self, toBatPV, toBatGrid, exp, fromBat, grid, cashflow
         ctx.fillText(numTxt, bar.x, bar.y - 14);
         // Unit "kWh" (small, gray, below number)
         ctx.fillStyle = '#64748b';
-        ctx.font = '500 10px "Sarabun", sans-serif';
+        ctx.font = '500 10px "Prompt", sans-serif';
         ctx.fillText('kWh', bar.x, bar.y - 2);
       });
       ctx.restore();
@@ -3070,10 +3365,10 @@ function updateCharts(pv, self, toBatPV, toBatGrid, exp, fromBat, grid, cashflow
       scales: {
         y: {
           beginAtZero: true,
-          title: { display: true, text: 'kWh', font: { family: 'Sarabun', size: 11, weight: '600' }, color: '#64748b' },
-          ticks: { font: { family: 'Sarabun', size: 11 }, color: '#64748b', callback: (v) => v + ' kWh' }
+          title: { display: true, text: 'kWh', font: { family: 'Prompt', size: 11, weight: '600' }, color: '#64748b' },
+          ticks: { font: { family: 'Prompt', size: 11 }, color: '#64748b' }
         },
-        x: { ticks: { font: { family: 'Sarabun', size: 12, weight: '600' }, color: '#0f172a' }}
+        x: { ticks: { font: { family: 'Prompt', size: 12, weight: '600' }, color: '#0f172a' }}
       }
     },
     plugins: [valueLabelsPlugin]
@@ -3108,7 +3403,7 @@ function updateCharts(pv, self, toBatPV, toBatGrid, exp, fromBat, grid, cashflow
       ctx.font = '700 18px "Prompt", sans-serif';
       ctx.fillText(`${total.toFixed(1)}`, cx, cy - 6);
       ctx.fillStyle = '#64748b';
-      ctx.font = '500 11px "Sarabun", sans-serif';
+      ctx.font = '500 11px "Prompt", sans-serif';
       ctx.fillText('kWh/วัน', cx, cy + 12);
 
       // === Outside leader-line labels ===
@@ -3156,7 +3451,7 @@ function updateCharts(pv, self, toBatPV, toBatGrid, exp, fromBat, grid, cashflow
         ctx.font = '700 12px "Prompt", sans-serif';
         ctx.fillText(`${val.toFixed(1)} kWh (${pct}%)`, tx, y3 - 7);
         ctx.fillStyle = '#64748b';
-        ctx.font = '500 10.5px "Sarabun", sans-serif';
+        ctx.font = '500 10.5px "Prompt", sans-serif';
         ctx.fillText(label, tx, y3 + 7);
       });
       ctx.restore();
@@ -3175,10 +3470,12 @@ function updateCharts(pv, self, toBatPV, toBatGrid, exp, fromBat, grid, cashflow
       }]
     },
     options: {
+      // maintainAspectRatio: false → donut fills container (Chart.js draws circular arcs regardless)
+      // Combined with CSS preventing canvas stretch, the donut stays a proper circle
       responsive: true, maintainAspectRatio: false,
       cutout: '58%',
       radius: '72%',
-      layout: { padding: { top: 18, bottom: 18, left: 90, right: 90 } },
+      layout: { padding: { top: 18, bottom: 18, left: 80, right: 80 } },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -3197,6 +3494,120 @@ function updateCharts(pv, self, toBatPV, toBatGrid, exp, fromBat, grid, cashflow
 
   if (cashChart) cashChart.destroy();
   const years = Array.from({length: 26}, (_, i) => 'ปี ' + i);
+  // Find break-even point (first year where cumulative cashflow >= 0)
+  let breakEvenYear = -1;
+  for (let i = 1; i < cashflowArr.length; i++) {
+    if (cashflowArr[i] >= 0 && cashflowArr[i - 1] < 0) {
+      // Linear interpolation for sub-year precision
+      const ratio = -cashflowArr[i - 1] / (cashflowArr[i] - cashflowArr[i - 1]);
+      breakEvenYear = (i - 1) + ratio;
+      break;
+    }
+  }
+
+  // Helper: format baht with M/K suffix
+  const fmtBaht = (v) => {
+    const abs = Math.abs(v);
+    if (abs >= 1_000_000) return (v / 1_000_000).toFixed(abs >= 10_000_000 ? 0 : 1) + 'M';
+    if (abs >= 1_000)     return (v / 1_000).toFixed(0) + 'K';
+    return v.toString();
+  };
+
+  // Custom plugin: paint money value labels at milestone years (5, 10, 15, 20, 25)
+  const milestoneYears = [5, 10, 15, 20, 25];
+  const milestoneLabelsPlugin = {
+    id: 'milestoneLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx, scales } = chart;
+      ctx.save();
+      ctx.font = '700 11px "Prompt", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      milestoneYears.forEach(year => {
+        if (year >= cashflowArr.length) return;
+        const val = cashflowArr[year];
+        const x = scales.x.getPixelForValue(year);
+        const y = scales.y.getPixelForValue(val);
+        // Format value: 1.2M / 850K / -250K
+        const labelText = (val >= 0 ? '+' : '−') + fmtBaht(Math.abs(val));
+        // Pill background
+        const padX = 6, padY = 3;
+        const textW = ctx.measureText(labelText).width;
+        const boxW = textW + padX * 2;
+        const boxH = 18;
+        const boxX = x - boxW / 2;
+        // Position label above the data point with offset
+        const boxY = y - 10 - boxH;
+        ctx.fillStyle = val >= 0 ? '#10b981' : '#ef4444';
+        ctx.beginPath();
+        ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+        ctx.fill();
+        // Text
+        ctx.fillStyle = '#fff';
+        ctx.fillText(labelText, x, boxY + boxH - padY - 1);
+      });
+      ctx.restore();
+    }
+  };
+
+  // Custom plugin: paint break-even marker line + label
+  const breakEvenPlugin = {
+    id: 'breakEvenLine',
+    afterDatasetsDraw(chart) {
+      if (breakEvenYear < 0) return;
+      const { ctx, chartArea, scales } = chart;
+      const x = scales.x.getPixelForValue(breakEvenYear);
+      const yZero = scales.y.getPixelForValue(0);
+      // Vertical dashed line from top to y=0
+      ctx.save();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x, chartArea.top);
+      ctx.lineTo(x, yZero);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Dot at the break-even point
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(x, yZero, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // Label box above the marker
+      const labelText = `คืนทุน ปีที่ ${breakEvenYear.toFixed(1)}`;
+      ctx.font = '700 11px "Prompt", sans-serif';
+      const textW = ctx.measureText(labelText).width;
+      const padX = 8, padY = 4;
+      const boxW = textW + padX * 2;
+      const boxH = 22;
+      let boxX = x - boxW / 2;
+      // Keep label within chart area
+      if (boxX < chartArea.left) boxX = chartArea.left + 2;
+      if (boxX + boxW > chartArea.right) boxX = chartArea.right - boxW - 2;
+      const boxY = chartArea.top + 6;
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.roundRect(boxX, boxY, boxW, boxH, 6);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(labelText, boxX + boxW / 2, boxY + boxH / 2);
+      ctx.restore();
+    }
+  };
+
+  // Get canvas + create vertical gradient for area fill (height auto-scales)
+  const cashCtx = $('cashChart').getContext('2d');
+  const cashHeight = $('cashChart').parentElement?.clientHeight || 420;
+  const grad = cashCtx.createLinearGradient(0, 0, 0, cashHeight);
+  grad.addColorStop(0, 'rgba(16, 185, 129, 0.35)');   // top — vivid green
+  grad.addColorStop(0.7, 'rgba(16, 185, 129, 0.08)'); // fading
+  grad.addColorStop(1, 'rgba(239, 68, 68, 0.08)');    // bottom — faint red (loss zone)
+
   cashChart = new Chart($('cashChart'), {
     type: 'line',
     data: {
@@ -3204,20 +3615,54 @@ function updateCharts(pv, self, toBatPV, toBatGrid, exp, fromBat, grid, cashflow
       datasets: [{
         data: cashflowArr,
         borderColor: '#10b981',
-        backgroundColor: 'rgba(16,185,129,0.15)',
-        fill: true, tension: 0.3, borderWidth: 2.5, pointRadius: 2
+        backgroundColor: grad,
+        fill: true,
+        tension: 0.35,
+        borderWidth: 3,
+        pointRadius: (c) => {
+          // Highlight key milestone years: 0, 5, 10, 15, 20, 25
+          const y = c.dataIndex;
+          return (y === 0 || y === 5 || y === 10 || y === 15 || y === 20 || y === 25) ? 4 : 0;
+        },
+        pointBackgroundColor: '#10b981',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointHoverRadius: 6,
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        tooltip: { callbacks: { label: (c) => '฿ ' + Math.round(c.raw).toLocaleString() }}
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          padding: 10,
+          titleFont: { family: 'Prompt', size: 12, weight: '700' },
+          bodyFont: { family: 'Prompt', size: 12 },
+          callbacks: {
+            title: (ctx) => `ปีที่ ${ctx[0].dataIndex}`,
+            label: (c) => {
+              const v = Math.round(c.raw);
+              const sign = v >= 0 ? '+' : '−';
+              return ` ${sign} ${Math.abs(v).toLocaleString()} บาท`;
+            }
+          }
+        }
       },
+      layout: { padding: { top: 36, bottom: 4, left: 4, right: 8 } },
       scales: {
-        y: { ticks: { callback: (v) => (v/1000).toFixed(0) + 'K' },
-             grid: { color: (c) => c.tick.value === 0 ? '#ef4444' : '#e2e8f0' }}
+        y: {
+          title: { display: true, text: 'กระแสเงินสดสะสม (บาท)', font: { family: 'Prompt', size: 11, weight: '600' }, color: '#475569' },
+          ticks: { callback: fmtBaht, font: { family: 'Prompt', size: 11 }, color: '#64748b' },
+          grid: { color: (c) => c.tick.value === 0 ? '#ef4444' : '#e2e8f0', lineWidth: (c) => c.tick.value === 0 ? 1.5 : 1 }
+        },
+        x: {
+          title: { display: true, text: 'จำนวนปี (ตั้งแต่ติดตั้ง)', font: { family: 'Prompt', size: 11, weight: '600' }, color: '#475569' },
+          ticks: { maxRotation: 0, autoSkip: true, autoSkipPadding: 10, font: { family: 'Prompt', size: 10 }, color: '#64748b' }
+        }
       }
-    }
+    },
+    plugins: [breakEvenPlugin, milestoneLabelsPlugin]
   });
 }
 
@@ -3276,20 +3721,35 @@ function applyDefaultProducts() {
   const pvBrandEl = $('pvBrand');
   if (pvBrandEl) {
     pvBrandEl.value = DEFAULT_PV_BRAND;
-    onPvBrandChange();          // populates datalist + auto-picks first model
-    // Ensure exact model is picked
-    if ($('pvModel') && DEFAULT_PV_MODEL) {
-      $('pvModel').value = DEFAULT_PV_MODEL;
-      onPvModelInput();          // locks watt + highlights blue
+    onPvBrandChange();          // populates listbox + auto-picks first model
+    // Ensure exact model is picked (sync hidden input + listbox highlight)
+    const pvHidden = $('pvModel');
+    const pvListbox = $('pvModelListbox');
+    if (pvHidden && pvListbox && DEFAULT_PV_MODEL) {
+      const targetItem = pvListbox.querySelector(`.inv-listbox-item[data-value="${CSS.escape(DEFAULT_PV_MODEL)}"]`);
+      if (targetItem) {
+        pvHidden.value = DEFAULT_PV_MODEL;
+        pvListbox.querySelectorAll('.inv-listbox-item.selected').forEach(el => el.classList.remove('selected'));
+        targetItem.classList.add('selected');
+        onPvModelInput();          // locks watt
+        pvListbox.classList.add('collapsed');
+      }
     }
   }
   // 2) Inverter → Deye SUN-6K-SG06LP1-EU-CM2 (SSC จำหน่าย)
   const invSel = $('invModel');
-  if (invSel) {
-    const exists = Array.from(invSel.options).some(o => o.value === DEFAULT_INV_VALUE);
-    if (exists) {
+  const invListbox = $('invModelListbox');
+  if (invSel && invListbox) {
+    const targetItem = invListbox.querySelector(`.inv-listbox-item[data-value="${CSS.escape(DEFAULT_INV_VALUE)}"]`);
+    if (targetItem) {
       invSel.value = DEFAULT_INV_VALUE;
-      onInvSelect();             // auto-fills price + info
+      invListbox.querySelectorAll('.inv-listbox-item.selected').forEach(el => el.classList.remove('selected'));
+      targetItem.classList.add('selected');
+      // Scroll the selected item into view in the listbox
+      try { targetItem.scrollIntoView({ block: 'nearest' }); } catch (e) {}
+      onInvSelect();              // auto-fills price + info
+      // Collapse listbox to show only the selected item (clean default UX)
+      invListbox.classList.add('collapsed');
     }
   }
 }
@@ -3389,11 +3849,71 @@ if (typeof lucide !== 'undefined') {
 
   // Reset inline grid template before print so @media print rules take effect
   let savedGridTemplate = '';
+  // Helper: extract data-URL from a div's background-image (handles both 'url("...")' and "url('...')")
+  function extractBgUrl(el) {
+    if (!el) return '';
+    const bg = el.style.backgroundImage || getComputedStyle(el).backgroundImage || '';
+    const m = bg.match(/url\(["']?(data:[^"')]+)["']?\)/);
+    return m ? m[1] : '';
+  }
+  // Swap diagram-section and energy-table-section in DOM before printing
+  // so PDF order is: KPI → Diagram → EnergyTable → Charts → ROI → Investment
+  // After print, restore original screen order.
+  let _printOrderSwapped = false;
+  function reorderForPrint() {
+    if (_printOrderSwapped) return;
+    const diagram = document.querySelector('.diagram-section');
+    const table   = document.querySelector('.energy-table-section');
+    if (!diagram || !table) return;
+    // Move diagram so it sits right BEFORE the energy table
+    table.parentNode.insertBefore(diagram, table);
+    _printOrderSwapped = true;
+  }
+  function restoreAfterPrint() {
+    if (!_printOrderSwapped) return;
+    const diagram = document.querySelector('.diagram-section');
+    const charts  = document.querySelector('.charts-section');
+    if (!diagram || !charts) return;
+    // Restore: diagram goes back BEFORE charts (original screen order)
+    charts.parentNode.insertBefore(diagram, charts);
+    _printOrderSwapped = false;
+  }
+  // Inject <img> elements for the two watermark divs so they print reliably
+  // (Chrome doesn't print background-images when "Background graphics" is OFF)
+  function injectPrintImages() {
+    const photo = document.querySelector('.header-watermark');
+    const battery = document.querySelector('.header-watermark-battery');
+    if (photo && !photo.querySelector('img.print-only-img')) {
+      const url = extractBgUrl(photo);
+      if (url) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'print-only-img';
+        img.alt = '';
+        img.style.cssText = 'display:none; width:100%; height:100%; object-fit:contain; object-position:left center;';
+        photo.appendChild(img);
+      }
+    }
+    if (battery && !battery.querySelector('img.print-only-img')) {
+      const url = extractBgUrl(battery);
+      if (url) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'print-only-img';
+        img.alt = '';
+        img.style.cssText = 'display:none; width:100%; height:100%; object-fit:contain;';
+        battery.appendChild(img);
+      }
+    }
+  }
+
   window.addEventListener('beforeprint', () => {
     savedGridTemplate = layout.style.gridTemplateColumns;
     layout.style.gridTemplateColumns = '';
     populatePrintInputs();
     updateProjectHeader();
+    injectPrintImages();
+    reorderForPrint();        // ← Move sections to PDF order before browser renders print preview
     const pi = document.getElementById('printInputs');
     if (pi) pi.style.display = 'block';
     const ph = document.getElementById('printProjectHeader');
@@ -3406,6 +3926,7 @@ if (typeof lucide !== 'undefined') {
   });
   window.addEventListener('afterprint', () => {
     if (savedGridTemplate) layout.style.gridTemplateColumns = savedGridTemplate;
+    restoreAfterPrint();      // ← Restore original screen DOM order
     const pi = document.getElementById('printInputs');
     if (pi) pi.style.display = 'none';
     const ph = document.getElementById('printProjectHeader');
@@ -3419,10 +3940,13 @@ if (typeof lucide !== 'undefined') {
   if (window.matchMedia) {
     const mql = window.matchMedia('print');
     const onMqChange = () => {
-      // Resize on entering AND leaving print so charts adapt to actual container
-      if (typeof flowChart !== 'undefined' && flowChart) flowChart.resize();
-      if (typeof cashChart !== 'undefined' && cashChart) cashChart.resize();
-      if (typeof mixChart !== 'undefined' && mixChart) mixChart.resize();
+      // Resize on entering AND leaving print so charts adapt to actual container.
+      // Use rAF to wait for layout to settle before measuring container size.
+      requestAnimationFrame(() => {
+        if (typeof flowChart !== 'undefined' && flowChart) { flowChart.resize(); flowChart.update('none'); }
+        if (typeof cashChart !== 'undefined' && cashChart) { cashChart.resize(); cashChart.update('none'); }
+        if (typeof mixChart !== 'undefined' && mixChart)   { mixChart.resize(); mixChart.update('none'); }
+      });
     };
     if (mql.addEventListener) mql.addEventListener('change', onMqChange);
     else if (mql.addListener) mql.addListener(onMqChange);
@@ -3468,12 +3992,20 @@ function populatePrintInputs() {
   const pricePV = num('pricePV');
   const priceInv = num('priceInv');
   const priceBat = num('priceBat');
-  const priceMisc = num('priceMisc');
+  // priceMisc rate (฿/W) × total panel watts
+  const priceMiscRate = num('priceMisc');
+  const _pvWattTotalPrint = (num('pvWatt') * num('pvQty')) || 0;
+  const priceMisc = priceMiscRate * _pvWattTotalPrint;
   const inflation = num('inflation');
   const degradation = num('degradation');
 
   const invSel = document.getElementById('invModel');
-  const invText = invSel.options[invSel.selectedIndex]?.text || 'ไม่ระบุ';
+  const invListbox = document.getElementById('invModelListbox');
+  let invText = 'ไม่ระบุ';
+  if (invSel && invListbox) {
+    const selected = invListbox.querySelector(`.inv-listbox-item[data-value="${CSS.escape(invSel.value || '')}"]`);
+    if (selected) invText = selected.textContent.trim();
+  }
   const invShort = invText.length > 45 ? invText.substring(0, 45) + '…' : invText;
 
   const outageMap = { rare: 'น้อย (<3 ครั้ง/ปี)', some: 'ปานกลาง', freq: 'บ่อย (>10 ครั้ง/ปี)' };
@@ -3516,19 +4048,21 @@ function populatePrintInputs() {
       ]
     },
     {
-      title: '💰 ราคา',
-      items: [
-        ...(pvNew > 0 ? [['ราคา PV / kWp', `${pricePV.toLocaleString()} บาท`]] : []),
-        ['ราคาแบต / ชุด', `${priceBat.toLocaleString()} บาท`],
-        ...(priceInv > 0 ? [['Hybrid Inverter ใหม่', `${priceInv.toLocaleString()} บาท`]] : []),
-        ...(priceMisc > 0 ? [['ค่าติดตั้ง + อุปกรณ์', `${priceMisc.toLocaleString()} บาท`]] : []),
-      ]
-    },
-    {
       title: '📈 สมมติฐาน ROI',
       items: [
         ['ค่าไฟขึ้นต่อปี (Inflation)', `${inflation}%/ปี`],
         ['แบตเสื่อมต่อปี (Degradation)', `${degradation}%/ปี`],
+      ]
+    },
+    {
+      // Cost-focused: ราคาอยู่ท้ายสุดเป็น "punchline" — ลูกค้าเห็นข้อมูล hardware/สมมติฐานก่อน
+      // เรียงตาม system flow: PV → Inverter → Battery → ค่าติดตั้ง
+      title: '💰 ราคา',
+      items: [
+        ...(pvNew > 0 ? [['ราคา PV / kWp', `${pricePV.toLocaleString()} บาท`]] : []),
+        ...(priceInv > 0 ? [['Hybrid Inverter ใหม่', `${priceInv.toLocaleString()} บาท`]] : []),
+        ['ราคาแบต / ชุด', `${priceBat.toLocaleString()} บาท`],
+        ...(priceMisc > 0 ? [['ค่าติดตั้ง + อุปกรณ์', `${priceMiscRate.toLocaleString()} ฿/W × ${_pvWattTotalPrint.toLocaleString()} W = ${priceMisc.toLocaleString()} บาท`]] : []),
       ]
     },
   ];
