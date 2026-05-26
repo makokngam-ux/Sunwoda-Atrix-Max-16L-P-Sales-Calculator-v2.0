@@ -125,18 +125,48 @@
     left: -6px; right: -6px; top: 0; bottom: 0;
   }
 
-  /* === INPUT GROUPS === */
-  .input-group { margin-bottom: 24px; }
+  /* === INPUT GROUPS — Card-based with step numbers === */
+  .input-group {
+    margin-bottom: 18px;
+    padding: 18px 18px 16px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(15, 41, 66, 0.04), 0 1px 2px rgba(15, 41, 66, 0.03);
+    position: relative;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    counter-increment: input-group-counter;
+  }
+  .input-group:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 6px rgba(15, 41, 66, 0.06), 0 2px 4px rgba(15, 41, 66, 0.04);
+  }
+  /* Reset counter at the start of the input form */
+  .panel.inputs { counter-reset: input-group-counter; }
   .group-title {
     font-family: 'Prompt', sans-serif;
     font-size: 14px; font-weight: 600; color: var(--primary);
-    letter-spacing: 0.3px; margin-bottom: 16px;
+    letter-spacing: 0.3px; margin-bottom: 14px;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     position: relative; padding-bottom: 10px;
   }
   .group-title::after {
     content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
     width: 50px; height: 2px; background: var(--accent); border-radius: 2px;
+  }
+  /* Step number badge — top-left corner of card */
+  .group-title::before {
+    content: counter(input-group-counter);
+    position: absolute;
+    left: -8px; top: -28px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: white;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(15, 41, 66, 0.2);
+    font-family: 'Prompt', sans-serif;
   }
   .group-title i[data-lucide] {
     width: 18px; height: 18px; color: var(--accent);
@@ -1478,21 +1508,25 @@
           <div class="lbl">ค่าไฟเดิม</div>
           <div class="val" id="oldBill">5,000</div>
           <div class="un">บาท/เดือน</div>
+          <div class="un-secondary" id="oldBillKwh" style="font-size:11px; color:var(--muted); margin-top:3px;">≈ 1,111 kWh/เดือน</div>
         </div>
         <div class="stat green">
           <div class="lbl">ค่าไฟใหม่</div>
           <div class="val" id="newBill">800</div>
           <div class="un">บาท/เดือน</div>
+          <div class="un-secondary" id="newBillKwh" style="font-size:11px; color:var(--muted); margin-top:3px;">≈ 178 kWh/เดือน</div>
         </div>
         <div class="stat blue">
           <div class="lbl">ประหยัดต่อปี</div>
           <div class="val" id="yearlySave">50,400</div>
           <div class="un">บาท/ปี</div>
+          <div class="un-secondary" id="yearlySaveKwh" style="font-size:11px; color:var(--muted); margin-top:3px;">≈ 11,200 kWh/ปี</div>
         </div>
         <div class="stat">
           <div class="lbl">Payback (real)</div>
           <div class="val" id="payback">11.1</div>
           <div class="un">ปี</div>
+          <div class="un-secondary" id="paybackMonths" style="font-size:11px; color:var(--muted); margin-top:3px;">≈ 133 เดือน</div>
         </div>
       </div>
     </div>
@@ -3010,6 +3044,22 @@ function calc() {
   $('newBill').textContent = fmt(newBillMonth, 0);
   $('yearlySave').textContent = fmt(yearlySave, 0);
   $('payback').textContent = paybackReal < 100 ? paybackReal.toFixed(1) : '—';
+  // === Secondary units (kWh / month-converted) ===
+  // Bill in ฿ → kWh: bill ÷ rateAvg
+  const oldBillKwh = rateAvg > 0 ? (bill / rateAvg) : 0;
+  const newBillKwh = rateAvg > 0 ? (newBillMonth / rateAvg) : 0;
+  const yearlySaveKwh = (oldBillKwh - newBillKwh) * 12;
+  if ($('oldBillKwh')) $('oldBillKwh').textContent = `≈ ${fmt(oldBillKwh, 0)} kWh/เดือน`;
+  if ($('newBillKwh')) $('newBillKwh').textContent = `≈ ${fmt(newBillKwh, 0)} kWh/เดือน`;
+  if ($('yearlySaveKwh')) $('yearlySaveKwh').textContent = `≈ ${fmt(yearlySaveKwh, 0)} kWh/ปี`;
+  if ($('paybackMonths')) {
+    if (paybackReal < 100) {
+      const months = Math.round(paybackReal * 12);
+      $('paybackMonths').textContent = `≈ ${months} เดือน`;
+    } else {
+      $('paybackMonths').textContent = '';
+    }
+  }
 
   // PV row: show per-panel pricing when qty > 0 (matches "× N แผง" in detail line)
   const _pvQty = parseFloat($('pvQty')?.value) || 0;
